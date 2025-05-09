@@ -1,22 +1,3 @@
 # Carter Patton's Personal Website
 
-This is a prepared template for your GitHub Pages deployment.
-
-## Important: Additional Steps Required
-
-After copying these files to your GitHub Pages repository:
-
-1. Build your React application locally by running:
-   ```
-   npm run build
-   ```
-
-2. Copy the build output files to this directory.
-   - Usually these files are in a `dist`, `build`, or `out` folder
-   - You'll need the JS and CSS files (typically in an `assets` folder)
-   - Make sure to replace this index.html with the built one, but keep the routing script
-
-3. Push the changes to GitHub
-
-4. Your site should be available at your GitHub Pages URL shortly after pushing.
-
+Carter Patton is a cybersecurity consultant specializing in cloud architecture, threat modeling, and security assessments for emerging technologies. He is currently pursuing a master’s degree in Artificial Intelligence, with a focus on secure AI system design and resilient model deployment. Carter is an emerging thought leader at the intersection of cybersecurity and machine learning — helping organizations anticipate AI-driven risks, architect trustworthy systems, and build security into innovation from day one.
