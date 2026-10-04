@@ -51,6 +51,7 @@ pattoncarter.github.io/
 └── site/
     ├── docker-compose.yml          # app + cloudflared services
     ├── .env.example                # CLOUDFLARE_TUNNEL_TOKEN, PORT
+    ├── .gitignore                  # ignores .env (the live tunnel token must never be committed)
     ├── frontend/                   # React + Vite + TypeScript + Tailwind
     │   └── src/
     │       ├── api/                # typed client for /api/* endpoints + mirrored TS types
@@ -78,7 +79,7 @@ Key decisions:
 
 | Endpoint | Returns |
 |---|---|
-| `/api/health` | `{"status": "ok"}` — uptime/cloudflared sanity |
+| `/api/health` | `200 {"status": "ok"}` when the process is up **and** the content directory is readable; `503 {"status": "unavailable"}` otherwise. Does not (and cannot) reflect cloudflared state, which lives in a separate container with no shared interface |
 | `/api/about` | tagline, bio paragraphs, core competencies, resume URL, social links (hero content included) |
 | `/api/projects` | list of `{title, description, technologies[], links{}, image_url}` |
 | `/api/writing` | list of `{title, url, date?, excerpt?}` — static Substack post list now; RSS source slots in later |
@@ -107,8 +108,8 @@ React section mounts ──▶ GET /api/<section> ──▶ router ──▶ get
       def get_contact(self) -> ContactInfo: ...
   ```
 
-  A registry maps each section to a source class chosen by env var (e.g. `WRITING_SOURCE=json` today, `=rss` later). Sections are independent — Writing can go live while Projects still reads JSON. Routers and frontend depend on the protocol only.
-- **Contract**: pydantic models in `backend/app/models.py`; hand-mirrored TypeScript types in `src/api/types.ts`. No codegen for v1.
+  A registry maps each section to a source class chosen by env var — `ABOUT_SOURCE`, `PROJECTS_SOURCE`, `WRITING_SOURCE`, `CONTACT_SOURCE` (all default `json`; e.g. `WRITING_SOURCE=rss` later). Sections are independent — Writing can go live while Projects still reads JSON. Routers and frontend depend on the protocol only. Since selection is per-section, a live source covering only some sections (e.g. RSS for Writing) delegates to `JsonFileSource` for the sections it doesn't cover.
+- **Contract**: pydantic models in `backend/app/models.py`; hand-mirrored TypeScript types in `src/api/types.ts`. No codegen for v1. Optional fields (`date?`, `excerpt?`) are true optionals with `None` defaults — a post without them is valid.
 
 ### Frontend rebuild specifics
 
@@ -117,6 +118,8 @@ React section mounts ──▶ GET /api/<section> ──▶ router ──▶ get
 - Each section fetches its own endpoint and renders independently with a loading state and a styled per-section error card; one bad endpoint never blanks the page.
 - Vite dev server proxies `/api` → `localhost:8000` for local frontend dev.
 - **Content extraction**: all copy, links, and image URLs are pulled from the current bundle into the JSON files during implementation — nothing from the live site is lost; it stays up as the visual reference.
+
+**Visual parity acceptance criterion:** every section, text block, link, and image present on the current live site appears on the corresponding route of the rebuilt site (order and styling may be refined iteratively; content must not be missing).
 
 ## Deployment
 
@@ -131,20 +134,23 @@ React section mounts ──▶ GET /api/<section> ──▶ router ──▶ get
 services:
   app:
     build: { context: ., dockerfile: backend/Dockerfile }
-    environment: { PORT: "8000", CONTENT_DIR: /app/content }
+    environment: { PORT: "${PORT:-8000}", CONTENT_DIR: /app/content }
     volumes: [ ./backend/content:/app/content:ro ]
     restart: unless-stopped
     # deliberately no ports exposed to the host
   cloudflared:
     image: cloudflare/cloudflared
     command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
-    depends_on: [ app ]
+    depends_on:
+      app:
+        condition: service_healthy
     restart: unless-stopped
 ```
 
+- `PORT` comes from `.env` (default 8000). The Cloudflare tunnel target must match it — if you change `PORT`, update the dashboard's service target too.
 - No host ports at all — cloudflared reaches the app over the compose network. Same posture on VPS and homelab.
 - Token-based (remotely-managed) tunnel = no credential files on disk; portability is "same `.env` on the new machine."
-- One-time Cloudflare dashboard step: public hostname `cpatto.org` → tunnel → `http://app:8000`.
+- One-time Cloudflare dashboard step: public hostname `cpatto.org` → tunnel → `http://app:${PORT}` (default `http://app:8000`).
 
 ### Deploy procedure (either machine)
 
@@ -166,7 +172,7 @@ docker compose up -d --build
 | Malformed/missing content JSON | Logged with filename + validation detail; that endpoint returns 500; only that section shows its error card; rest of site works |
 | API down entirely | Every section renders its independent error state — no blank page |
 | Container crash | `restart: unless-stopped` + healthcheck |
-| Future live fetcher fails upstream | Design requirement on the seam: live sources must fall back to JSON/cached data. Not built now; interface is tested against this contract |
+| Future live fetcher fails upstream | Documented contract for future source implementations: live sources must fall back to JSON/cached data when upstream fails. Not built in v1 (the v1 test proves only that a fake non-JSON source can serve any section) |
 | Secrets | Only the tunnel token, in gitignored `.env`; nothing sensitive in image or repo |
 
 ## Testing
