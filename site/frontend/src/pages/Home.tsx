@@ -7,7 +7,7 @@ export function Home() {
   const { data, error, loading } = useContent(api.about)
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden py-20">
+    <main className="relative isolate flex min-h-screen items-center justify-center overflow-hidden py-20">
       <ParticleField className="absolute inset-0 h-full w-full" />
       <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
         <h1 className="mb-6 font-display text-4xl font-bold leading-tight md:text-6xl">

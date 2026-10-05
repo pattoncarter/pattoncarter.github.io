@@ -1,8 +1,13 @@
 import { useEffect, useRef } from 'react'
 
 interface Particle {
-  x: number; y: number; size: number; speedX: number; speedY: number
-  color: string; opacity: number
+  x: number
+  y: number
+  size: number
+  speedX: number
+  speedY: number
+  color: string
+  opacity: number
 }
 
 // Spec extracted from the production bundle's particle background (Jx):
