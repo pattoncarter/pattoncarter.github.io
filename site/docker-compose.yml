@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      PORT: "${PORT:-8000}"
+      CONTENT_DIR: /app/content
+    volumes:
+      - ./backend/content:/app/content:ro
+    restart: unless-stopped
+    # Deliberately no ports exposed to the host — cloudflared reaches the app
+    # over the compose network. Local access uses `docker compose run --rm -p 8000:8000 app`.
+
+  cloudflared:
+    image: cloudflare/cloudflared
+    command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
