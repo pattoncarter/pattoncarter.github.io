@@ -2567,8 +2567,29 @@ def extract_obj(anchor):
                 if depth == 0: return bundle[start:j+1]
         j += 1
 
+def extract_arr(anchor):
+    i = bundle.find(anchor)
+    if i < 0: return None
+    start = bundle.find('[', i)
+    depth = 0; j = start; in_str = False; esc = False
+    while j < len(bundle):
+        c = bundle[j]
+        if in_str:
+            if esc: esc = False
+            elif c == '\\': esc = True
+            elif c == '"': in_str = False
+        else:
+            if c == '"': in_str = True
+            elif c == '[': depth += 1
+            elif c == ']':
+                depth -= 1
+                if depth == 0: return bundle[start:j+1]
+        j += 1
+
 def parse(t):
-    return json.loads(re.sub(r'([{,])\s*([A-Za-z_]\w*)\s*:', r'\1"\2":', t))
+    t = re.sub(r'([{,])\s*([A-Za-z_]\w*)\s*:', r'\1"\2":', t)
+    t = t.replace("\\'", "'")
+    return json.loads(t)
 
 fails = []
 ps = {p['id']: p for p in json.load(open('site/backend/content/projects.json'))}
@@ -2587,7 +2608,7 @@ for pid, j in ps.items():
     elif sorted(bl) != sorted(jl):
         fails.append(f'{pid}.links')
 
-fr = parse(extract_obj('const FR=['))
+fr = parse(extract_arr('const FR=['))   # posts live in an array, not a single object
 w = json.load(open('site/backend/content/writing.json'))
 if [p['title'] for p in fr] != [p['title'] for p in w['posts']]:
     fails.append('writing post order')
