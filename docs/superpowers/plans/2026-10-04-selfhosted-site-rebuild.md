@@ -1800,74 +1800,201 @@ git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "f
 
 **Files:**
 - Modify: `site/frontend/src/pages/Home.tsx` (replace stub)
+- Create: `site/frontend/src/components/ParticleField.tsx` (particle background — spec extracted from the production bundle; also reused by Contact in Task 15)
+- Create: `site/frontend/src/components/ScrollToTop.tsx`
+- Modify: `site/frontend/src/App.tsx` (add ScrollToTop)
+- Modify: `site/frontend/src/index.css` (@theme palette fix + blink keyframes)
 
-- [ ] **Step 1: Implement Home.tsx**
+Bundle-verified hero facts (production bundle `assets/index-D7rXIsh4.js`, section `#home`) — implementers have no browser, so use these instead of inspecting the live site:
+- H1 (hardcoded in the bundle, not an API field): `Carter Patton. ` followed by green spans `Innovator,` `Leader,` `Technologist`.
+- Directly below the H1: a single mono line `$ ./Carter-Patton` (green) + blinking block cursor — it is NOT a boxed terminal; it is a plain `<p>`.
+- Below that: the hero paragraph — this IS the `hero` field from `/api/about` ("Building at the intersection of AI, cybersecurity, and human potential."). Never hardcode it.
+- The live hero also has a full-bleed particle-field background (bundle component `Jx`) and a bordered oscilloscope widget (`MR`). The particle field IS rebuilt (Step 2); the oscilloscope is a known v1 gap (see Task 16 note).
+- There are NO CTA buttons in the live hero.
+- `tagline` is not visible text; it belongs only in title/meta.
 
-The hero text comes from `/api/about` (`hero` field) — never hardcode it. The live site's hero renders a terminal block (per the current production bundle: just a `$ ./Carter-Patton` prompt with a blinking cursor — likely a single line, not a multi-line output). **Before writing the file, open https://pattoncarter.github.io in a browser and copy the EXACT terminal lines** into `TERMINAL_LINES` — do not ship the placeholder values below. (`tagline` is NOT visible text on the live site; it belongs only in title/meta.)
+- [ ] **Step 1: Fix @theme palette to the live site's theme + add blink animation**
+
+The scaffold's palette was an approximation; the production CSS theme defines `--accent-blue: #0C1281`, `--accent-green: #66FF66`, `--neutral-white: #E8E8E8`, `--neutral-gray: #333333`, `primary-black: #000000`. In the @theme block of `site/frontend/src/index.css`, replace the color token values with:
+```css
+  --color-bg: #000000;
+  --color-surface: #000000;
+  --color-border: #333333;
+  --color-accent: #66ff66;
+  --color-text: #e8e8e8;
+  --color-muted: #8b8b8b;
+```
+(`muted` ≈ neutral-white at 60% on black. Live cards are black with gray borders, so `surface` equals `bg` — borders do the separating.)
+
+Also add to the @theme block (hero terminal cursor blink — production CSS: `animation: blink 1s step-end infinite`, keyframes opacity 1 → 0 at 50%):
+```css
+  --animate-blink: blink 1s step-end infinite;
+
+  @keyframes blink {
+    0%, 100% { opacity: 1 }
+    50% { opacity: 0 }
+  }
+```
+
+- [ ] **Step 2: Write ParticleField.tsx (production bundle's `Jx`, extracted spec)**
+
+`site/frontend/src/components/ParticleField.tsx`:
+```tsx
+import { useEffect, useRef } from 'react'
+
+interface Particle {
+  x: number; y: number; size: number; speedX: number; speedY: number
+  color: string; opacity: number
+}
+
+// Spec extracted from the production bundle's particle background (Jx):
+// min(100, width/10) drifting dots, 20% green / 80% dark blue, faint green
+// connection lines under 100px. The live site uses it on both Home and Contact.
+export function ParticleField({ className = '' }: { className?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth
+      canvas.height = canvas.offsetHeight
+    }
+    resize()
+
+    const count = Math.min(100, window.innerWidth / 10)
+    const particles: Particle[] = Array.from({ length: count }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 2 + 1,
+      speedX: (Math.random() - 0.5) * 0.5,
+      speedY: (Math.random() - 0.5) * 0.5,
+      color: Math.random() > 0.8 ? '#66FF66' : '#0C1281',
+      opacity: Math.random() * 0.5 + 0.2,
+    }))
+
+    let raf = 0
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      for (const p of particles) {
+        p.x += p.speedX
+        p.y += p.speedY
+        if (p.x < 0) p.x = canvas.width
+        if (p.x > canvas.width) p.x = 0
+        if (p.y < 0) p.y = canvas.height
+        if (p.y > canvas.height) p.y = 0
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        ctx.fillStyle = p.color
+        ctx.globalAlpha = p.opacity
+        ctx.fill()
+      }
+      ctx.globalAlpha = 0.1
+      ctx.strokeStyle = '#66FF66'
+      ctx.lineWidth = 0.5
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x
+          const dy = particles[i].y - particles[j].y
+          if (Math.sqrt(dx * dx + dy * dy) < 100) {
+            ctx.beginPath()
+            ctx.moveTo(particles[i].x, particles[i].y)
+            ctx.lineTo(particles[j].x, particles[j].y)
+            ctx.stroke()
+          }
+        }
+      }
+      raf = requestAnimationFrame(draw)
+    }
+    draw()
+
+    window.addEventListener('resize', resize)
+    return () => {
+      window.removeEventListener('resize', resize)
+      cancelAnimationFrame(raf)
+    }
+  }, [])
+
+  return <canvas ref={canvasRef} className={className} />
+}
+```
+
+- [ ] **Step 3: Write ScrollToTop.tsx and wire it into App.tsx**
+
+`site/frontend/src/components/ScrollToTop.tsx`:
+```tsx
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
+
+export function ScrollToTop() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+
+  return null
+}
+```
+
+In `site/frontend/src/App.tsx`, import `ScrollToTop` from `./components/ScrollToTop` and render `<ScrollToTop />` as the first child of `<BrowserRouter>` (before the layout div). Without this, client-side navigation preserves the previous page's scroll offset.
+
+- [ ] **Step 4: Implement Home.tsx**
+
+The static hero (H1 + terminal line) always renders; only the API-sourced paragraph (`data.hero`) carries loading/error states. No CTA buttons — the live hero has none.
 
 `site/frontend/src/pages/Home.tsx`:
 ```tsx
-import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { useContent } from '../api/useContent'
+import { ParticleField } from '../components/ParticleField'
 import { SectionError } from '../components/SectionError'
-
-// PLACEHOLDER — replace with the exact lines copied from the live site before committing.
-const TERMINAL_LINES = ['$ ./Carter-Patton', 'profile: loaded', 'status: building resilient systems']
 
 export function Home() {
   const { data, error, loading } = useContent(api.about)
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col items-start gap-10 px-6 py-24">
-      <div className="w-full max-w-xl rounded-lg border border-border bg-surface p-4 font-mono text-sm">
-        {TERMINAL_LINES.map((line, i) => (
-          <p key={i} className={i === 0 ? 'text-accent' : 'text-muted'}>{line}</p>
-        ))}
-      </div>
-
-      {error ? (
-        <SectionError section="home" error={error} />
-      ) : loading || !data ? (
-        <p className="font-mono text-muted">loading…</p>
-      ) : (
-        <>
-          <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">
-            {data.hero}
-          </h1>
-          <div className="flex flex-wrap gap-4">
-            <Link to="/projects" className="rounded-md bg-accent px-6 py-3 font-display font-semibold text-bg transition-opacity hover:opacity-80">
-              View Projects
-            </Link>
-            <Link to="/about" className="rounded-md border border-border px-6 py-3 font-display font-semibold transition-colors hover:border-accent">
-              About
-            </Link>
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden py-20">
+      <ParticleField className="absolute inset-0 h-full w-full" />
+      <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
+        <h1 className="mb-6 font-display text-4xl font-bold leading-tight md:text-6xl">
+          Carter Patton.{' '}
+          <span className="text-accent">Innovator,</span>{' '}
+          <span className="text-accent">Leader,</span>{' '}
+          <span className="text-accent">Technologist</span>
+        </h1>
+        <p className="mb-8 font-mono text-lg text-text/80 md:text-xl">
+          <span className="text-accent">$ ./Carter-Patton</span>
+          <span aria-hidden className="ml-1 inline-block h-5 w-2 translate-y-0.5 animate-blink bg-accent" />
+        </p>
+        {error ? (
+          <SectionError section="home" error={error} />
+        ) : loading || !data ? (
+          <p className="font-mono text-muted">loading…</p>
+        ) : (
+          <div className="mx-auto mb-8 max-w-2xl">
+            <p className="text-lg">{data.hero}</p>
           </div>
-        </>
-      )}
+        )}
+      </div>
     </main>
   )
 }
 ```
 
-- [ ] **Step 2: Verify the build**
+- [ ] **Step 5: Verify the build**
 
 Run (from `site/frontend/`): `npm run build`
 Expected: PASS
 
-- [ ] **Step 3: Commit**
-
-First verify the placeholder was actually replaced (the live site's lines were copied in Step 1). Run from the repo root:
-```bash
-grep -q "profile: loaded" site/frontend/src/pages/Home.tsx \
-  && echo "STOP: TERMINAL_LINES placeholder not replaced - copy the live site's terminal lines first (Step 1)" \
-  || echo "OK: placeholder replaced, safe to commit"
-```
-Expected: `OK: ...`. If it prints `STOP`, go back and fix `TERMINAL_LINES` before committing. (Do not use a `! grep ...` form here — shell tooling on this machine escapes `!` in commands, which would make the guard fail unconditionally.)
+- [ ] **Step 6: Commit**
 
 ```bash
-git add site/frontend/src/pages/Home.tsx
-git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(frontend): home page with terminal motif and API-driven hero"
+git add site/frontend/src/pages/Home.tsx site/frontend/src/components/ParticleField.tsx site/frontend/src/components/ScrollToTop.tsx site/frontend/src/App.tsx site/frontend/src/index.css
+git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(frontend): home hero with particle field, live-site palette, scroll-to-top"
 ```
 
 ### Task 12: About page
@@ -2285,84 +2412,20 @@ git add site/frontend/src/pages/Writing.tsx
 git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(frontend): writing page with post list and archive link"
 ```
 
-### Task 15: Contact page + PointCloud animation
+### Task 15: Contact page (particle background)
 
 **Files:**
-- Create: `site/frontend/src/components/PointCloud.tsx`
 - Modify: `site/frontend/src/pages/Contact.tsx` (replace stub)
 
-- [ ] **Step 1: Write PointCloud.tsx (canvas point-field; approximation of the current contact animation — refine against the live site in Task 16)**
+The live contact section uses the same particle field as Home (bundle component `Jx`) — reuse `ParticleField` from Task 11; do not create a separate PointCloud component.
 
-`site/frontend/src/components/PointCloud.tsx`:
-```tsx
-import { useEffect, useRef } from 'react'
-
-interface Point { x: number; y: number; z: number }
-
-export function PointCloud({ className = '' }: { className?: string }) {
-  const ref = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    const canvas = ref.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    let raf = 0
-    const points: Point[] = Array.from({ length: 300 }, () => ({
-      x: Math.random(), y: Math.random(), z: Math.random(),
-    }))
-    const mouse = { x: 0.5, y: 0.5 }
-
-    const onMove = (e: MouseEvent) => {
-      const r = canvas.getBoundingClientRect()
-      mouse.x = (e.clientX - r.left) / r.width
-      mouse.y = (e.clientY - r.top) / r.height
-    }
-
-    const resize = () => {
-      canvas.width = canvas.clientWidth
-      canvas.height = canvas.clientHeight
-    }
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      for (const p of points) {
-        p.x = (p.x + 0.0004 * (0.5 + p.z)) % 1
-        const px = p.x * canvas.width + (mouse.x - 0.5) * 30 * p.z
-        const py = p.y * canvas.height + (mouse.y - 0.5) * 30 * p.z
-        ctx.fillStyle = `rgba(34, 211, 238, ${0.2 + p.z * 0.6})`
-        ctx.fillRect(px, py, 1.5, 1.5)
-      }
-      raf = requestAnimationFrame(draw)
-    }
-
-    resize()
-    // Listener on window (not the canvas): Contact renders this with
-    // pointer-events-none for click-through, so a canvas listener never fires.
-    // The handler computes position relative to the canvas rect either way.
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('resize', resize)
-    draw()
-
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('resize', resize)
-    }
-  }, [])
-
-  return <canvas ref={ref} className={className} />
-}
-```
-
-- [ ] **Step 2: Implement Contact.tsx**
+- [ ] **Step 1: Implement Contact.tsx**
 
 `site/frontend/src/pages/Contact.tsx`:
 ```tsx
 import { api } from '../api/client'
 import { useContent } from '../api/useContent'
-import { PointCloud } from '../components/PointCloud'
+import { ParticleField } from '../components/ParticleField'
 import { SectionError } from '../components/SectionError'
 
 const socialLabels: Record<string, string> = { github: 'GitHub', linkedin: 'LinkedIn', substack: 'Substack' }
@@ -2372,7 +2435,7 @@ export function Contact() {
 
   return (
     <main className="relative mx-auto flex min-h-[70vh] max-w-5xl flex-col justify-center gap-8 overflow-hidden px-6 py-16">
-      <PointCloud className="pointer-events-none absolute inset-0 h-full w-full opacity-60" />
+      <ParticleField className="pointer-events-none absolute inset-0 h-full w-full opacity-60" />
       <div className="relative">
         <h1 className="font-display text-3xl font-bold">Contact</h1>
         {error ? (
@@ -2403,16 +2466,16 @@ export function Contact() {
 }
 ```
 
-- [ ] **Step 3: Verify the build**
+- [ ] **Step 2: Verify the build**
 
 Run (from `site/frontend/`): `npm run build`
 Expected: PASS
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
-git add site/frontend/src/components/PointCloud.tsx site/frontend/src/pages/Contact.tsx
-git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(frontend): contact page with point cloud animation"
+git add site/frontend/src/pages/Contact.tsx
+git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(frontend): contact page with particle background"
 ```
 
 ### Task 16: Full-stack visual parity verification
@@ -2441,9 +2504,10 @@ Open http://localhost:5173 and https://pattoncarter.github.io side by side. For 
 - Every text block present on the live site appears (copy, order, emphasis).
 - Every link points to the same target.
 - Every image on the live site is present (assign Unsplash URLs found in Task 6 Step 5 into `content/projects.json` if missing).
-- The terminal motif on `/` matches the live site's terminal block (the lines were copied into `TERMINAL_LINES` in `Home.tsx` during Task 11 — fix them there if wrong).
+- The terminal motif on `/` matches the live site: a single green `$ ./Carter-Patton` line with a blinking block cursor under the H1 (hardcoded in `Home.tsx` per bundle extraction — adjust styling there if off).
+- Known v1 gap (accepted, do not attempt here): the live hero's bordered oscilloscope widget is an interactive canvas component that is not rebuilt. Everything else must match.
 - On a project detail page, every field present for that project in the production bundle appears (long description, highlights, insights, timeline, category) — section order/styling may be refined, content must not be missing.
-- Note palette/spacing differences and adjust `src/index.css` `@theme` values + component classes to match.
+- Palette tokens are already set from the production theme (Task 11); only fine-tune per-component classes (borders, button styles, spacing) if a section still looks off.
 
 - [ ] **Step 3: Verify the built frontend served by the real backend (production path)**
 
