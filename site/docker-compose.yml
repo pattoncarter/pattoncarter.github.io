@@ -10,10 +10,10 @@ services:
       - ./backend/content:/app/content:ro
     restart: unless-stopped
     # Deliberately no ports exposed to the host — cloudflared reaches the app
-    # over the compose network. Local access uses `docker compose run --rm -p 8000:8000 app`.
+    # over the compose network. Local access uses `docker compose run --rm -p 8000:8000 app` (adjust the host port if you change PORT).
 
   cloudflared:
-    image: cloudflare/cloudflared
+    image: cloudflare/cloudflared:2026.9.3
     command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       app:
