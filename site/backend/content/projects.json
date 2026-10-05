@@ -99,7 +99,7 @@
   {
     "title": "ALFRED - Local AI Assistant (IN PROGRESS)",
     "description": "A fully local, voice-controlled AI assistant that integrates LLMs, home automation, and tool orchestration via MCP.",
-    "role": "I’m the sole designer and engineer of ALFRED, leading everything from architectural design to CUDA setup, speech integration, tool execution, and future RLHF training strategy.",
+    "role": "I\u2019m the sole designer and engineer of ALFRED, leading everything from architectural design to CUDA setup, speech integration, tool execution, and future RLHF training strategy.",
     "technologies": [
       "llama.cpp",
       "MCP",

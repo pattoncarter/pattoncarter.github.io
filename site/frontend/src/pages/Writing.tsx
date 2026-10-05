@@ -10,7 +10,7 @@ export function Writing() {
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-16">
-      <h1 className="font-display text-3xl font-bold">Writing</h1>
+      <h1 className="font-display text-3xl font-bold"><span className="text-accent">#</span> WRITING</h1>
       {data.intro && <p className="max-w-3xl leading-relaxed text-muted">{data.intro}</p>}
       <ul className="flex flex-col gap-4">
         {data.posts.map(post => (
@@ -34,7 +34,7 @@ export function Writing() {
       </ul>
       {data.archive_url && (
         <a href={data.archive_url} target="_blank" rel="noreferrer" className="text-sm text-accent hover:underline">
-          View All Posts on Substack →
+          View All Posts on Substack
         </a>
       )}
     </main>

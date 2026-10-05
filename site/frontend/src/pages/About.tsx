@@ -10,10 +10,10 @@ export function About() {
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-16">
-      <h1 className="font-display text-3xl font-bold">About Me</h1>
+      <h1 className="font-display text-3xl font-bold"><span className="text-accent">#</span> ABOUT ME</h1>
 
       <section>
-        <h2 className="font-display text-xl font-bold">My Mission</h2>
+        <h2 className="font-display text-xl font-bold text-accent">MY MISSION</h2>
         {data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed first:mt-0">{p}</p>)}
         <a
           href={data.resume_url}
@@ -26,7 +26,7 @@ export function About() {
       </section>
 
       <section>
-        <h2 className="font-display text-xl font-bold">Education</h2>
+        <h2 className="font-display text-xl font-bold text-accent">EDUCATION</h2>
         <div className="mt-4 flex flex-col gap-4">
           {data.education.map(e => (
             <article key={e.degree} className="rounded-md border border-border bg-surface p-5">
@@ -40,12 +40,12 @@ export function About() {
       </section>
 
       <section>
-        <h2 className="font-display text-xl font-bold">Beyond the Code</h2>
+        <h2 className="font-display text-xl font-bold text-accent">BEYOND THE CODE</h2>
         <p className="mt-4 max-w-3xl leading-relaxed text-muted">{data.interests}</p>
       </section>
 
       <section>
-        <h2 className="font-display text-xl font-bold">Core Competencies</h2>
+        <h2 className="font-display text-xl font-bold text-accent">CORE COMPETENCIES</h2>
         <ul className="mt-4 grid gap-3 sm:grid-cols-2">
           {data.competencies.map(c => (
             <li key={c} className="rounded-md border border-border bg-surface px-4 py-3 text-sm">{c}</li>
@@ -56,7 +56,7 @@ export function About() {
       <div>
         <p className="font-mono text-sm text-accent">$ cat philosophy.txt</p>
         <blockquote className="mt-2 border-l-2 border-accent pl-4 font-display italic text-muted">
-          “{data.quote}”
+          "{data.quote}"
         </blockquote>
       </div>
     </main>
