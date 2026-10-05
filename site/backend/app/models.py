@@ -1,15 +1,20 @@
 """Wire contract for /api/<section>. Keep in sync with frontend src/api/types.ts."""
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-class Education(BaseModel):
+class ContentModel(BaseModel):
+    """Content contract: unknown keys are data errors, not silently ignored."""
+    model_config = ConfigDict(extra="forbid")
+
+
+class Education(ContentModel):
     degree: str
     school: str
     description: str = ""
     date_range: str | None = None
 
 
-class AboutContent(BaseModel):
+class AboutContent(ContentModel):
     tagline: str
     hero: str
     mission: str
@@ -21,7 +26,7 @@ class AboutContent(BaseModel):
     socials: dict[str, str]
 
 
-class Project(BaseModel):
+class Project(ContentModel):
     title: str
     description: str
     technologies: list[str] = []
@@ -37,20 +42,20 @@ class Project(BaseModel):
     category: str | None = None
 
 
-class Post(BaseModel):
+class Post(ContentModel):
     title: str
     url: str
     date: str | None = None
     excerpt: str | None = None
 
 
-class WritingContent(BaseModel):
+class WritingContent(ContentModel):
     intro: str = ""
     posts: list[Post]
     archive_url: str | None = None
 
 
-class ContactInfo(BaseModel):
+class ContactInfo(ContentModel):
     email: str
     socials: dict[str, str] = {}
     intro: str | None = None

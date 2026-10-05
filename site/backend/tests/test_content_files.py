@@ -15,7 +15,12 @@ def test_real_content_files_validate():
     source = JsonFileSource(CONTENT_DIR)
     assert source.get_about().education
     projects = source.get_projects()
-    # Every project needs an id: the /projects/:id detail route depends on it.
-    assert projects and all(p.id for p in projects)
+    assert projects, "projects.json is empty"
+    # Every project needs a unique id: the /projects/:id detail route depends on it.
+    missing = [p.title for p in projects if not p.id]
+    assert not missing, f"projects without id: {missing}"
+    ids = [p.id for p in projects]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    assert not dupes, f"duplicate project ids: {dupes}"
     assert source.get_writing().posts
     assert source.get_contact().email

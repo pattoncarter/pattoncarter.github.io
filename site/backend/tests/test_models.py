@@ -90,3 +90,8 @@ def test_contact_intro_optional():
     assert c.intro is None
     c2 = ContactInfo(email="a@b.c", socials={}, intro="hi")
     assert c2.intro == "hi"
+
+
+def test_unknown_key_rejected():
+    with pytest.raises(ValidationError):
+        Project.model_validate({"title": "T", "description": "D", "higlights": []})
