@@ -1183,26 +1183,91 @@ git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "f
 ### Task 7: Full backend test suite green + lockfile export
 
 **Files:**
+- Modify: `site/backend/tests/test_models.py` (strengthen assertions)
+- Create: `site/backend/tests/test_content_files.py`
+- Modify: `site/backend/pyproject.toml` + `site/backend/uv.lock` (declare pydantic — currently only a transitive dep of fastapi, but the app imports it directly)
 - Create: `site/backend/requirements.txt` (generated)
 
-- [ ] **Step 1: Run the full suite**
+Context: Task 6A's code-quality review left three advisories to fold in here, before the lockfile is exported: (1) pydantic v2's default `extra='ignore'` silently drops renamed/removed model fields — the new detail-field tests assert only a subset of the values; (2) nothing validates the real committed content files (the rest of the suite is hermetic via tmp_path); (3) pydantic is imported directly but not declared in pyproject.toml, so it must be an explicit dependency before exporting pinned requirements.
+
+- [ ] **Step 1: Strengthen model tests (close the silent-drop hole)**
+
+In `site/backend/tests/test_models.py`:
+- In `test_project_detail_fields_populated`, assert ALL six new fields (currently only `id` and `highlights` are asserted):
+```python
+    assert p.long_description == "Para one.\n\nPara two."
+    assert p.insights == "text"
+    assert p.timeline == "Jan 2024 - Jun 2024"
+    assert p.category == "AI"
+```
+- In `test_education_date_range_optional`, add a populated assertion:
+```python
+    e2 = Education(degree="B.S.", school="S", date_range="2020 - 2024")
+    assert e2.date_range == "2020 - 2024"
+```
+- In `test_contact_intro_optional`, add a populated assertion:
+```python
+    c2 = ContactInfo(email="a@b.c", socials={}, intro="hi")
+    assert c2.intro == "hi"
+```
+
+- [ ] **Step 2: Add a guard test for the real content files**
+
+Create `site/backend/tests/test_content_files.py`:
+```python
+"""Guard: the committed content/*.json must always validate against the models.
+
+The rest of the suite is hermetic (tmp_path fixtures); this points the real
+JsonFileSource at the real content dir so a typo'd key or type slip in the
+seeded data fails locally instead of surfacing as a logged 500 per request.
+"""
+from pathlib import Path
+
+from app.sources.json_source import JsonFileSource
+
+CONTENT_DIR = Path(__file__).resolve().parent.parent / "content"
+
+
+def test_real_content_files_validate():
+    source = JsonFileSource(CONTENT_DIR)
+    assert source.get_about().education
+    projects = source.get_projects()
+    # Every project needs an id: the /projects/:id detail route depends on it.
+    assert projects and all(p.id for p in projects)
+    assert source.get_writing().posts
+    assert source.get_contact().email
+```
+
+- [ ] **Step 3: Declare pydantic as an explicit dependency**
+
+Run (from `site/backend/`): `uv add "pydantic>=2"`
+Expected: `pyproject.toml` gains the pydantic entry; `uv.lock` updates.
+
+- [ ] **Step 4: Run the full suite**
 
 Run (from `site/backend/`): `uv run pytest -v`
-Expected: ALL tests pass (health, models, sources, sections, spa_fallback). If any fail, fix before continuing.
+Expected: ALL tests pass (health, models, sources, sections, spa_fallback, content_files). If any fail, fix before continuing.
 
-- [ ] **Step 2: Export pinned requirements for Docker**
+- [ ] **Step 5: Commit test hardening**
+
+```bash
+git add site/backend/tests/test_models.py site/backend/tests/test_content_files.py
+git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "test(backend): pin all detail-field assertions and guard real content files"
+```
+
+- [ ] **Step 6: Export pinned requirements for Docker**
 
 Run (from `site/backend/`):
 ```bash
 uv export --no-dev --no-hashes -o requirements.txt
 ```
-Expected: `requirements.txt` created with pinned versions.
+Expected: `requirements.txt` created with pinned versions, including pydantic.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 7: Commit dependency + lockfile**
 
 ```bash
-git add site/backend/requirements.txt
-git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "chore(backend): export pinned requirements for Docker build"
+git add site/backend/pyproject.toml site/backend/uv.lock site/backend/requirements.txt
+git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "chore(backend): declare pydantic explicitly; export pinned requirements for Docker build"
 ```
 
 ---
@@ -1832,13 +1897,14 @@ git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "f
 import { Link } from 'react-router-dom'
 import type { Project } from '../api/types'
 
-// Same label map as the detail page (Task 13A) — keep in sync.
+// Label values match what the live site renders per link type (verified against
+// the production bundle's link objects). Same map as the detail page (Task 13A) — keep in sync.
 const linkLabels: Record<string, string> = {
-  repo: 'Repository',
+  repo: 'GitHub Repository',
   report: 'Report',
-  site: 'Site',
+  site: 'Coming Soon',
   final_report: 'Final Report',
-  final_presentation: 'Presentation',
+  final_presentation: 'Final Presentation',
 }
 
 export function ProjectCard({ project }: { project: Project }) {
@@ -1942,13 +2008,14 @@ import { api } from '../api/client'
 import { useContent } from '../api/useContent'
 import { SectionError } from '../components/SectionError'
 
-// Same label map as ProjectCard (Task 13) — keep in sync.
+// Label values match what the live site renders per link type (verified against
+// the production bundle's link objects). Same map as ProjectCard (Task 13) — keep in sync.
 const linkLabels: Record<string, string> = {
-  repo: 'Repository',
+  repo: 'GitHub Repository',
   report: 'Report',
-  site: 'Site',
+  site: 'Coming Soon',
   final_report: 'Final Report',
-  final_presentation: 'Presentation',
+  final_presentation: 'Final Presentation',
 }
 
 export function ProjectDetail() {
