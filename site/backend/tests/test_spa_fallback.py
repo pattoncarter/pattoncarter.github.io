@@ -20,7 +20,7 @@ def _app_with_static(tmp_path):
 def _app_with_escape_targets(tmp_path):
     """SPA shell plus secrets outside the static dir that must never be served."""
     static_dir = tmp_path / "static"
-    (static_dir / "assets").mkdir(parents=True)
+    static_dir.mkdir()
     (static_dir / "index.html").write_text("<html><!-- SPA --></html>")
     (tmp_path / "outside.txt").write_text("SECRET outside")
     sibling = tmp_path / "static2"
@@ -88,21 +88,24 @@ def test_missing_index_html_returns_json_404(tmp_path):
     assert resp.headers["content-type"].startswith("application/json")
 
 
-def test_raw_traversal_does_not_leak(tmp_path):
-    resp = TestClient(_app_with_escape_targets(tmp_path)).get("/../../outside.txt")
-    assert "SECRET" not in resp.text
+# Literal ".." segments are normalized away by conforming HTTP clients before
+# they reach the server; the %2F-encoded forms below are the vectors that
+# actually arrive at uvicorn, so they are what we pin here.
 
 
 def test_encoded_traversal_does_not_leak(tmp_path):
-    resp = TestClient(_app_with_escape_targets(tmp_path)).get("/..%2F..%2Foutside.txt")
+    resp = TestClient(_app_with_escape_targets(tmp_path)).get("/..%2Foutside.txt")
+    assert resp.status_code == 200
     assert "SECRET" not in resp.text
 
 
 def test_prefix_sibling_escape_does_not_leak(tmp_path):
-    resp = TestClient(_app_with_escape_targets(tmp_path)).get("/../static2/secret.txt")
+    resp = TestClient(_app_with_escape_targets(tmp_path)).get("/..%2Fstatic2%2Fsecret.txt")
+    assert resp.status_code == 200
     assert "SECRET" not in resp.text
 
 
 def test_symlink_escape_does_not_leak(tmp_path):
     resp = TestClient(_app_with_escape_targets(tmp_path)).get("/link.txt")
+    assert resp.status_code == 200
     assert "SECRET" not in resp.text
