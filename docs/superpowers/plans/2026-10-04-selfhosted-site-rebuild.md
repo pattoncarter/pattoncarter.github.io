@@ -2882,6 +2882,7 @@ Terminal 2 (SPA, from `frontend/`):
     # -> http://localhost:8000 (API + SPA from one container)
 
 ## Deploy (VPS or homelab — same commands)
+    # one time only: git clone https://github.com/pattoncarter/pattoncarter.github.io.git && cd pattoncarter.github.io
     git pull && cd site
     cp .env.example .env               # first time only; paste the tunnel token
     docker compose up -d --build
@@ -2899,7 +2900,7 @@ Edit `backend/content/*.json` (about, projects, writing, contact). Changes take 
    docker run --rm cloudflare/cloudflared:latest --version   # -> "cloudflared version <X.Y.Z>"
    ```
    then set `image: cloudflare/cloudflared:<X.Y.Z>` in `site/docker-compose.yml` (replace the bare `cloudflare/cloudflared`). Verify the tag exists in the registry (e.g. it resolves to the same digest as `latest`). Re-run `docker compose config -q` to confirm it still parses. (The originally planned `docker inspect --format '{{.Config.Image}}'` fails on Docker 29.x — "map has no entry for key Image" — hence `--version`.)
-2. Fix the stale local-access comment in `site/docker-compose.yml`: the recipe hardcodes `-p 8000:8000` — append "(adjust the host port if you change PORT)" to that comment line.
+2. Fix the stale local-access comment in `site/docker-compose.yml`: the recipe hardcodes `-p 8000:8000` — append "(if you change PORT, the right-hand side of -p must match it)" to that comment line (the container-side port is what must equal $PORT; the host-side port is arbitrary).
 
 - [ ] **Step 4: Final acceptance against the spec**
 
