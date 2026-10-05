@@ -2525,7 +2525,7 @@ The implementer has no browser, so "walking the live site" is done against the p
 **Frontend copy/structure fixes:**
 4. `About.tsx` — restructure to match the live section (live headings verified: section "ABOUT ME", subsections "MY MISSION", "EDUCATION", "BEYOND THE CODE", "CORE COMPETENCIES"):
    - H1 becomes `About Me`.
-   - Section heading `My Mission`: render the mission as one `<p>` per `\n\n` paragraph (fixes the Task 12 collapse finding: `{data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed first:mt-0">{p}</p>)}`), followed by the resume button whose label becomes `View Résumé` (live uses the cedilla; ours currently says "View Resume").
+   - Section heading `My Mission`: render the mission as one `<p>` per `\n\n` paragraph (fixes the Task 12 collapse finding: `{data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed">{p}</p>)}`), followed by the resume button whose label becomes `View Résumé` (live uses the cedilla; ours currently says "View Resume").
    - Section heading `Education`: content unchanged.
    - New section heading `Beyond the Code`: the interests paragraph moves here (out of the first section).
    - Section heading `Core Competencies`: grid unchanged.
@@ -2546,6 +2546,8 @@ The implementer has no browser, so "walking the live site" is done against the p
 16. `projects.json`: the ALFRED role's curly apostrophe is currently a literal U+2019 while every other non-ASCII character in the file is `\uXXXX`-escaped — write it as `\u2019` for uniformity (parsed value unchanged).
 
 **Known v1 gaps (accepted — do NOT attempt):** the hero's bordered oscilloscope widget; mobile swipe navigation + tutorial overlay; the projects section's interactive category filter buttons; the live nav's `$ menu` mobile toggle; the per-post "Read on Substack" CTA link inside writing post cards (our whole card is the link instead); SVG chevron icon on the detail-page back link (we use a `←` character).
+
+**Accepted parity quirk (2026-10-04, quality review):** the writing date expression from item 6 parses date-only ISO strings as UTC midnight and formats in the viewer's local timezone — viewers west of UTC see each post date shifted one day early. The production bundle uses this exact expression (verified 2026-10-04: `new Date(e.date).toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"numeric"}).replace(/\//g,".")`), so the live site exhibits the identical shift; byte-exact parity takes precedence over a timezone fix. If a timezone-correct rendering is ever wanted, use `post.date.split('-').reverse().join('.')` and re-baseline the parity expectation.
 **Do NOT "fix" Modjulo's link label:** the production bundle renders `links:[{type:"Coming Soon",url:"https://modjulo.ai"}]` — a live URL labeled "Coming Soon" is verified parity (re-checked 2026-10-04).
 **ALFRED placeholder links:** the bundle's ALFRED entry has two placeholder URLs (`github.com/yourusername/alfred`, `your-demo-link.com`) that were intentionally omitted from content in Task 6 — leave them omitted; the audit below documents this as an expected exception.
 
