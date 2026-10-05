@@ -4,12 +4,19 @@
   --font-display: "Space Grotesk", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-mono: "Roboto Mono", monospace;
-  --color-bg: #0a0e14;
-  --color-surface: #11161f;
-  --color-border: #1e2633;
-  --color-accent: #22d3ee;
-  --color-text: #e5e9f0;
-  --color-muted: #8b95a7;
+  --color-bg: #000000;
+  --color-surface: #000000;
+  --color-border: #333333;
+  --color-accent: #66ff66;
+  --color-text: #e8e8e8;
+  --color-muted: #8b8b8b;
+
+  --animate-blink: blink 1s step-end infinite;
+
+  @keyframes blink {
+    0%, 100% { opacity: 1 }
+    50% { opacity: 0 }
+  }
 }
 
 @layer base {
