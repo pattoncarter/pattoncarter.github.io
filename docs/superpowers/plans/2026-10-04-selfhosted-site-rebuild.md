@@ -2512,6 +2512,7 @@ Open http://localhost:5173 and https://pattoncarter.github.io side by side. For 
 - The terminal motif on `/` matches the live site: a single green `$ ./Carter-Patton` line with a blinking block cursor under the H1 (hardcoded in `Home.tsx` per bundle extraction — adjust styling there if off).
 - Known v1 gap (accepted, do not attempt here): the live hero's bordered oscilloscope widget is an interactive canvas component that is not rebuilt. Everything else must match.
 - On a project detail page, every field present for that project in the production bundle appears (long description, highlights, insights, timeline, category) — section order/styling may be refined, content must not be missing.
+- Known discrepancy (found in Task 12 review): `data.mission` in `content/about.json` is a multi-paragraph string (`\n\n`-separated) and the live site renders it as separate `<p>` elements, but `About.tsx` renders it in one `<p>`, collapsing the break into a space. Fix: render `{data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed">{p}</p>)}` (drop the `mt-4` on the first paragraph or use `first:mt-0`). No other about field contains `\n\n` (verified: only `mission`).
 - Palette tokens are already set from the production theme (Task 11); only fine-tune per-component classes (borders, button styles, spacing) if a section still looks off.
 
 - [ ] **Step 3: Verify the built frontend served by the real backend (production path)**
