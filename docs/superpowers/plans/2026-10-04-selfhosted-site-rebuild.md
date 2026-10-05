@@ -876,6 +876,8 @@ git add site/backend/tests/test_spa_fallback.py site/backend/app/main.py
 git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "test(backend): SPA fallback coverage; fix missing-index 500 and bare /api 404"
 ```
 
+> **Post-execution note (2026-10-04):** code review found the raw-traversal test vacuous (httpx normalizes literal `..` client-side) and the two-segment encoded vector mis-geometried. Final state: 9 tests — raw test removed (explanatory comment kept), encoded vectors are single-segment (`/..%2Foutside.txt`, `/..%2Fstatic2%2Fsecret.txt`), all three escape canaries assert status 200 + no leak, and were empirically verified to fail with real leakage if the containment check is removed.
+
 ### Task 6: Seed content JSON files (extracted from the live bundle)
 
 **Files:**
