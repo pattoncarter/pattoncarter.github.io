@@ -1,0 +1,24 @@
+{
+  "intro": "A space for deeper dives into technology, entrepreneurship, venture capital, the future of humanity, and the ideas that drive my work. These writings aim to foster nuanced conversations and encourage new perspectives.",
+  "posts": [
+    {
+      "title": "S:N 0x01 \u2013 DeepSeek on the DarkWeb, CVE Wobbles, and AI-Generated Malware",
+      "url": "https://humanotl.substack.com/p/sn-0x01-deepseek-on-the-darkweb-cve",
+      "date": "2025-04-22",
+      "excerpt": "The debut of S:N Ratio. This issue covers the DeepSeek data breach, MITRE\u2019s near-collapse of the CVE program, a CISA advisory on Oracle cloud compromises, and the emergence of 'slopsquatting'\u2014an AI supply chain exploit targeting developer trust."
+    },
+    {
+      "title": "S:N 0x02 \u2013 More Cyber Budget Cuts, Agentic Guardrails, and \u201cUn-phishable\u201d Logins",
+      "url": "https://humanotl.substack.com/p/sn-0x02-more-cyber-budget-cuts-agentic",
+      "date": "2025-05-06",
+      "excerpt": "This issue of S:N Ratio dives into the proposed $491M cut to CISA\u2019s budget, the growing emphasis on access control for AI agents, Microsoft's push for passwordless logins, and key takeaways from the 2025 Verizon DBIR\u2014including a sharp rise in third-party breach involvement."
+    },
+    {
+      "title": "The Big 3 in AI Are Not Who You Think",
+      "url": "https://humanotl.substack.com/p/the-big-3-in-ai-are-not-who-you-think",
+      "date": "2024-06-26",
+      "excerpt": "A breakdown of the real power players in AI's future\u2014not OpenAI, Anthropic, or Mistral\u2014but the infrastructure giants: Microsoft, Google, and a16z. This piece explores how compute, capital, and control shape the emerging AI economy."
+    }
+  ],
+  "archive_url": "https://carterpatton.substack.com"
+}

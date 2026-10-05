@@ -1,0 +1,91 @@
+[
+  {
+    "title": "GhidraPT - AI-Assisted Reverse Engineering",
+    "description": "Extends Ghidra with ChatGPT-powered code insights, accelerating reverse engineering by offering semantic suggestions and variable renaming.",
+    "role": "I developed GhidraPT to streamline my own reverse engineering workflows and contribute to the cybersecurity tooling ecosystem. I designed the integration architecture, implemented the plugin, and tested it against several real-world binaries to fine-tune its relevance and responsiveness.",
+    "technologies": [
+      "Python",
+      "Ghidra",
+      "ChatGPT API"
+    ],
+    "links": {
+      "repo": "https://github.com/pattoncarter/GhidraPT"
+    },
+    "image_url": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&h=300",
+    "status": null
+  },
+  {
+    "title": "HybridRAG Oncology Research Assistant",
+    "description": "An LLM-powered assistant that combines vector search and knowledge graphs to deliver explainable, grounded answers to complex oncology research questions.",
+    "role": "Developed a hybrid retrieval system combining vector search and knowledge graphs for enhanced information retrieval. Implemented a knowledge graph architecture to provide traceable and grounded answers. Facilitated complex oncology research queries with improved accuracy and transparency. Open-sourced the project to contribute to the research community.",
+    "technologies": [
+      "RAG",
+      "Knowledge Graphs",
+      "LLMs"
+    ],
+    "links": {
+      "repo": "https://github.com/pattoncarter/HybridRAG-Oncology-Research_Assistant",
+      "report": "https://github.com/pattoncarter/HybridRAG-Oncology-Research_Assistant/blob/main/HybridRAG-Report.pdf"
+    },
+    "image_url": "https://images.unsplash.com/photo-1609705024873-7add858e3036?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&h=300",
+    "status": null
+  },
+  {
+    "title": "Modjulo - Personalized AI Learning Platform",
+    "description": "A platform integrating LLMs for personalized content generation, feedback, and adaptive study plans. Exploring spaced repetition and retention techniques to reinforce foundational concepts.",
+    "role": "I co-lead the product vision and technical direction of Modjulo, contributing to knowledge graph modeling, AI integration strategy, and early architecture prototypes. I also help facilitate team discussions on core user needs, market positioning, and long-term differentiation.",
+    "technologies": [
+      "LLMs",
+      "Knowledge Graphs"
+    ],
+    "links": {
+      "site": "https://modjulo.ai"
+    },
+    "image_url": "https://images.unsplash.com/photo-1684610529682-553625a1ffed?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&h=300",
+    "status": null
+  },
+  {
+    "title": "ALFRED - Local AI Assistant (IN PROGRESS)",
+    "description": "A fully local, voice-controlled AI assistant that integrates LLMs, home automation, and tool orchestration via MCP.",
+    "role": "Building a secure, fully offline voice-based AI system using GGUF LLM inference. Integrated STT, TTS, and Python orchestrator with model context protocol (MCP). Enabled GPU-accelerated inference of Qwen3-30B on local RTX 3090 system. Exposed custom tools via FastAPI for IoT, file I/O, security camera analytics. Designed persistent memory system for RLHF and long-term customization. Built with a modular interface to allow future integrations of other LLM APIs.",
+    "technologies": [
+      "GGUF",
+      "MCP",
+      "FastAPI"
+    ],
+    "links": {},
+    "image_url": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=300",
+    "status": "IN PROGRESS"
+  },
+  {
+    "title": "Artificial Sunlight System",
+    "description": "A modular IoT lighting system that simulates sunlight cycles and weather to support circadian rhythm health using MQTT and real-time control.",
+    "role": "As co-creator, I led the system architecture design, MQTT communication stack implementation, power delivery engineering, and circuit safety. Implemented modular MQTT-connected panels capable of displaying artificial sunrise/sunset cycles and real-time weather animations. Designed scalable power and data protocols for dynamic multi-panel behavior (master, slave, pass-through). Crafted custom enclosures using reflective acrylic and aluminum risers to combine thermal performance with aesthetic design.",
+    "technologies": [
+      "MQTT",
+      "IoT",
+      "Hardware"
+    ],
+    "links": {
+      "final_report": "https://docs.google.com/document/d/16Bly7h_l_saqjZDOGbVY0Q0iGlUOgQr5BWySypaFiTM/edit?usp=sharing",
+      "final_presentation": "https://docs.google.com/presentation/d/1miQKOXuddL6HZ9XhGv_lwKRBUUT4L8icXKSyZSZNyZM/edit?usp=sharing"
+    },
+    "image_url": "https://plus.unsplash.com/premium_photo-1664297899314-c9752762d449?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&h=300",
+    "status": null
+  },
+  {
+    "title": "TALON - Offgrid Mesh Communication for Search and Rescue",
+    "description": "An affordable, reliable LoRa mesh network designed to support search-and-rescue operations in infrastructure-poor environments like national parks.",
+    "role": "Designed and built handheld devices, repeaters, and base stations using LoRa radios and custom firmware. Implemented a live-updating React frontend for SAR teams, powered by a Supabase PostgreSQL backend. Field-tested devices in dense forests and elevated terrain to validate real-world performance. Developed a rental-based distribution model for park visitors to ensure accessibility and affordability.",
+    "technologies": [
+      "LoRa",
+      "React",
+      "Supabase"
+    ],
+    "links": {
+      "final_report": "https://docs.google.com/document/d/13p73Gc5BT_dy6iWrzbpfbcwwrXzn10ZN/edit?usp=sharing&ouid=101327735823146975308&rtpof=true&sd=true"
+    },
+    "image_url": "https://plus.unsplash.com/premium_photo-1671737775556-5d2b4dba7bac?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&h=300",
+    "status": null
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "tagline": "Architecting Resilient Futures",
+  "hero": "Building at the intersection of AI, cybersecurity, and human potential.",
+  "mission": "My mission is to empower enterprises from all industries to build secure and efficient solutions. I believe secure technology is a powerful lever for growth, and innovation with security at its core is integral to success.\n\nWorking at the intersection of AI, cybersecurity, and entrepreneurship, I'm focused on creating systems that not only advance technology but also enhance humanity. I remain optimistic about our technological future while acknowledging the need for resilience against potential threats.",
+  "interests": "My interest in the exploration of nature, sci-fi, and electronic music production informs my creative thinking and appreciation for complex systems. These passions provide another lens through which I explore patterns, innovation, and the art of innovation.",
+  "quote": "Technology should be a tool for empowerment, not a replacement for our humanity.",
+  "competencies": [
+    "AI-Enabled Learning & Research Systems",
+    "Applied AI Engineering & LLM Integration",
+    "Cloud Security Architecture (AWS, Azure)",
+    "Contextual Search & Retrieval-Augmented Generation (RAG)",
+    "Cybersecurity Strategy Assessment & Risk Analysis",
+    "Decentralized Networking & Resilient Communication Systems",
+    "Embedded Systems & IoT Development",
+    "Full-Stack Web Application Development",
+    "Secure Software Development Lifecycle (SDLC)",
+    "Security Architecture for Enterprise AI Applications",
+    "Systems Automation & Edge Computing",
+    "Technical Due Diligence & Cyber Risk Evaluation (M&A)"
+  ],
+  "education": [
+    {
+      "degree": "M.S. in Artificial Intelligence",
+      "school": "University of Texas at Austin",
+      "description": "Multidisciplinary program focused on machine learning, neural networks, and the ethical, secure deployment of AI systems in real-world environments. Emphasis on robust model architecture, AI system resilience, and cybersecurity in ML pipelines."
+    },
+    {
+      "degree": "B.S. Computer Engineering",
+      "school": "Texas A&M University",
+      "description": "Undergraduate program blending computer science and electrical engineering. Gained hands-on experience with microcontroller programming, real-time systems, and hardware-software integration, while also building a strong foundation in systems programming, computer architecture, and network protocols."
+    }
+  ],
+  "resume_url": "https://drive.google.com/file/d/11OcH409ToCZbbFgkzY076zRFmfSpHlxK/view",
+  "socials": {
+    "github": "https://github.com/pattoncarter",
+    "linkedin": "https://linkedin.com/in/carterpatton",
+    "substack": "https://carterpatton.substack.com"
+  }
+}
