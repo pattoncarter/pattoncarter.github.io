@@ -2513,6 +2513,8 @@ Open http://localhost:5173 and https://pattoncarter.github.io side by side. For 
 - Known v1 gap (accepted, do not attempt here): the live hero's bordered oscilloscope widget is an interactive canvas component that is not rebuilt. Everything else must match.
 - On a project detail page, every field present for that project in the production bundle appears (long description, highlights, insights, timeline, category) — section order/styling may be refined, content must not be missing.
 - Known discrepancy (found in Task 12 review): `data.mission` in `content/about.json` is a multi-paragraph string (`\n\n`-separated) and the live site renders it as separate `<p>` elements, but `About.tsx` renders it in one `<p>`, collapsing the break into a space. Fix: render `{data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed">{p}</p>)}` (drop the `mt-4` on the first paragraph or use `first:mt-0`). No other about field contains `\n\n` (verified: only `mission`).
+- Known robustness fix (found in Task 13 review): in `ProjectCard.tsx`, change the card key from `key={p.title}` to `key={p.id ?? p.title}` (every project carries a unique non-null id; title has no uniqueness guarantee). One line.
+- Do NOT "fix" Modjulo's link label: the production bundle renders `links:[{type:"Coming Soon",url:"https://modjulo.ai"}]` — a live URL labeled "Coming Soon" is verified parity with the live site (re-checked against the bundle 2026-10-04). Leave it.
 - Palette tokens are already set from the production theme (Task 11); only fine-tune per-component classes (borders, button styles, spacing) if a section still looks off.
 
 - [ ] **Step 3: Verify the built frontend served by the real backend (production path)**
