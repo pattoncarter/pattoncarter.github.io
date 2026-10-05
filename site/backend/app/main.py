@@ -25,6 +25,9 @@ def create_app(content_dir: Path | None = None, static_dir: Path | None = None) 
                             media_type="application/json")
         return {"status": "ok"}
 
+    from app.api.sections import create_router as create_sections_router
+    app.include_router(create_sections_router(content_dir))
+
     if static_dir is not None:
         # NO StaticFiles mount here: a Mount at "/" is a full match for every
         # path and would shadow any route registered after it. Instead the
