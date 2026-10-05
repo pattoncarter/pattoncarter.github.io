@@ -1,0 +1,13 @@
+from typing import Protocol
+
+from app.models import AboutContent, ContactInfo, Project, WritingContent
+
+
+class ContentSource(Protocol):
+    """One implementation per data backend. Live sources (RSS, GitHub) added
+    later must implement this and fall back to JSON/cached data when upstream fails."""
+
+    def get_about(self) -> AboutContent: ...
+    def get_projects(self) -> list[Project]: ...
+    def get_writing(self) -> WritingContent: ...
+    def get_contact(self) -> ContactInfo: ...
