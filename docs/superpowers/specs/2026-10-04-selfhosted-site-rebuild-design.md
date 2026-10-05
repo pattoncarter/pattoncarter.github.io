@@ -82,7 +82,7 @@ Key decisions:
 | `/api/health` | `200 {"status": "ok"}` when the process is up **and** the content directory is readable; `503 {"status": "unavailable"}` otherwise. Does not (and cannot) reflect cloudflared state, which lives in a separate container with no shared interface |
 | `/api/about` | tagline, bio paragraphs, core competencies, resume URL, social links (hero content included) |
 | `/api/projects` | list of `{title, description, technologies[], links{}, image_url}` |
-| `/api/writing` | list of `{title, url, date?, excerpt?}` — static Substack post list now; RSS source slots in later |
+| `/api/writing` | `WritingContent {intro, posts[], archive_url?}` where each post is `{title, url, date?, excerpt?}` — static Substack data now (intro paragraph + archive link included because the live section has them); RSS source slots in later |
 | `/api/contact` | email + social links (GitHub, LinkedIn, Substack); point-cloud animation params stay in the component |
 
 ### Data flow
@@ -104,7 +104,7 @@ React section mounts ──▶ GET /api/<section> ──▶ router ──▶ get
   class ContentSource(Protocol):
       def get_about(self) -> AboutContent: ...
       def get_projects(self) -> list[Project]: ...
-      def get_writing(self) -> list[Post]: ...
+      def get_writing(self) -> WritingContent: ...   # {intro, posts[], archive_url?}
       def get_contact(self) -> ContactInfo: ...
   ```
 
