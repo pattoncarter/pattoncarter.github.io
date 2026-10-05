@@ -10,22 +10,19 @@ export function About() {
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-16">
-      <section>
-        <h1 className="font-display text-3xl font-bold">About</h1>
-        <p className="mt-4 max-w-3xl leading-relaxed">{data.mission}</p>
-        <p className="mt-4 max-w-3xl leading-relaxed text-muted">{data.interests}</p>
-        <blockquote className="mt-6 border-l-2 border-accent pl-4 font-display italic text-muted">
-          “{data.quote}”
-        </blockquote>
-      </section>
+      <h1 className="font-display text-3xl font-bold">About Me</h1>
 
       <section>
-        <h2 className="font-display text-xl font-bold">Core Competencies</h2>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          {data.competencies.map(c => (
-            <li key={c} className="rounded-md border border-border bg-surface px-4 py-3 text-sm">{c}</li>
-          ))}
-        </ul>
+        <h2 className="font-display text-xl font-bold">My Mission</h2>
+        {data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed first:mt-0">{p}</p>)}
+        <a
+          href={data.resume_url}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-6 w-fit rounded-md bg-accent px-6 py-3 font-display font-semibold text-bg transition-opacity hover:opacity-80"
+        >
+          View Résumé
+        </a>
       </section>
 
       <section>
@@ -42,14 +39,26 @@ export function About() {
         </div>
       </section>
 
-      <a
-        href={data.resume_url}
-        target="_blank"
-        rel="noreferrer"
-        className="w-fit rounded-md bg-accent px-6 py-3 font-display font-semibold text-bg transition-opacity hover:opacity-80"
-      >
-        View Resume
-      </a>
+      <section>
+        <h2 className="font-display text-xl font-bold">Beyond the Code</h2>
+        <p className="mt-4 max-w-3xl leading-relaxed text-muted">{data.interests}</p>
+      </section>
+
+      <section>
+        <h2 className="font-display text-xl font-bold">Core Competencies</h2>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+          {data.competencies.map(c => (
+            <li key={c} className="rounded-md border border-border bg-surface px-4 py-3 text-sm">{c}</li>
+          ))}
+        </ul>
+      </section>
+
+      <div>
+        <p className="font-mono text-sm text-accent">$ cat philosophy.txt</p>
+        <blockquote className="mt-2 border-l-2 border-accent pl-4 font-display italic text-muted">
+          “{data.quote}”
+        </blockquote>
+      </div>
     </main>
   )
 }

@@ -22,7 +22,11 @@ export function Writing() {
               className="block rounded-md border border-border bg-surface p-5 transition-colors hover:border-accent"
             >
               <h2 className="font-display font-semibold">{post.title}</h2>
-              {post.date && <p className="mt-1 font-mono text-xs text-muted">{post.date}</p>}
+              {post.date && (
+                <p className="mt-1 font-mono text-xs text-muted">
+                  {new Date(post.date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, '.')}
+                </p>
+              )}
               {post.excerpt && <p className="mt-2 text-sm text-muted">{post.excerpt}</p>}
             </a>
           </li>

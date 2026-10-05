@@ -4,9 +4,13 @@
     "description": "Extends Ghidra with ChatGPT-powered code insights, accelerating reverse engineering by offering semantic suggestions and variable renaming.",
     "role": "I developed GhidraPT to streamline my own reverse engineering workflows and contribute to the cybersecurity tooling ecosystem. I designed the integration architecture, implemented the plugin, and tested it against several real-world binaries to fine-tune its relevance and responsiveness.",
     "technologies": [
-      "Python",
       "Ghidra",
-      "ChatGPT API"
+      "Java",
+      "Python",
+      "ChatGPT API",
+      "Reverse Engineering",
+      "Static Analysis",
+      "OpenAI"
     ],
     "links": {
       "repo": "https://github.com/pattoncarter/GhidraPT"
@@ -29,11 +33,16 @@
   {
     "title": "HybridRAG Oncology Research Assistant",
     "description": "An LLM-powered assistant that combines vector search and knowledge graphs to deliver explainable, grounded answers to complex oncology research questions.",
-    "role": "Developed a hybrid retrieval system combining vector search and knowledge graphs for enhanced information retrieval. Implemented a knowledge graph architecture to provide traceable and grounded answers. Facilitated complex oncology research queries with improved accuracy and transparency. Open-sourced the project to contribute to the research community.",
+    "role": "I led the development of the HybridRAG Oncology Research Assistant, focusing on integrating hybrid retrieval mechanisms and ensuring the explainability of the AI-generated responses. My responsibilities included designing the system architecture, implementing the knowledge graph, and fine-tuning the language models for optimal performance in the oncology domain.",
     "technologies": [
-      "RAG",
+      "Python",
+      "PyTorch",
+      "Transformers",
+      "FAISS",
+      "Neo4j",
+      "Hugging Face",
       "Knowledge Graphs",
-      "LLMs"
+      "Retrieval-Augmented Generation"
     ],
     "links": {
       "repo": "https://github.com/pattoncarter/HybridRAG-Oncology-Research_Assistant",
@@ -60,7 +69,14 @@
     "role": "I co-lead the product vision and technical direction of Modjulo, contributing to knowledge graph modeling, AI integration strategy, and early architecture prototypes. I also help facilitate team discussions on core user needs, market positioning, and long-term differentiation.",
     "technologies": [
       "LLMs",
-      "Knowledge Graphs"
+      "Knowledge Graphs",
+      "Spaced Repetition",
+      "Python",
+      "React",
+      "Vector Search",
+      "LangChain",
+      "Neo4j",
+      "NLP"
     ],
     "links": {
       "site": "https://modjulo.ai"
@@ -83,11 +99,21 @@
   {
     "title": "ALFRED - Local AI Assistant (IN PROGRESS)",
     "description": "A fully local, voice-controlled AI assistant that integrates LLMs, home automation, and tool orchestration via MCP.",
-    "role": "Building a secure, fully offline voice-based AI system using GGUF LLM inference. Integrated STT, TTS, and Python orchestrator with model context protocol (MCP). Enabled GPU-accelerated inference of Qwen3-30B on local RTX 3090 system. Exposed custom tools via FastAPI for IoT, file I/O, security camera analytics. Designed persistent memory system for RLHF and long-term customization. Built with a modular interface to allow future integrations of other LLM APIs.",
+    "role": "I’m the sole designer and engineer of ALFRED, leading everything from architectural design to CUDA setup, speech integration, tool execution, and future RLHF training strategy.",
     "technologies": [
-      "GGUF",
+      "llama.cpp",
       "MCP",
-      "FastAPI"
+      "FastAPI",
+      "Whisper.cpp",
+      "Vosk",
+      "Coqui TTS",
+      "Piper",
+      "Docker",
+      "Python",
+      "Ubuntu",
+      "NVIDIA CUDA",
+      "Tailscale",
+      "Conda"
     ],
     "links": {},
     "image_url": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=300",
@@ -108,11 +134,19 @@
   {
     "title": "Artificial Sunlight System",
     "description": "A modular IoT lighting system that simulates sunlight cycles and weather to support circadian rhythm health using MQTT and real-time control.",
-    "role": "As co-creator, I led the system architecture design, MQTT communication stack implementation, power delivery engineering, and circuit safety. Implemented modular MQTT-connected panels capable of displaying artificial sunrise/sunset cycles and real-time weather animations. Designed scalable power and data protocols for dynamic multi-panel behavior (master, slave, pass-through). Crafted custom enclosures using reflective acrylic and aluminum risers to combine thermal performance with aesthetic design.",
+    "role": "As co-creator, I led the system architecture design, MQTT communication stack implementation, power delivery engineering, and circuit safety. I also contributed to aesthetic design, soldering, and final presentation.",
     "technologies": [
+      "ESP32",
       "MQTT",
-      "IoT",
-      "Hardware"
+      "Mosquitto",
+      "FastLED",
+      "RGBW LED",
+      "Python",
+      "Raspberry Pi",
+      "WiFi",
+      "Python Weather API",
+      "Custom Circuit Design",
+      "3D Printed Hardware"
     ],
     "links": {
       "final_report": "https://docs.google.com/document/d/16Bly7h_l_saqjZDOGbVY0Q0iGlUOgQr5BWySypaFiTM/edit?usp=sharing",
@@ -136,11 +170,20 @@
   {
     "title": "TALON - Offgrid Mesh Communication for Search and Rescue",
     "description": "An affordable, reliable LoRa mesh network designed to support search-and-rescue operations in infrastructure-poor environments like national parks.",
-    "role": "Designed and built handheld devices, repeaters, and base stations using LoRa radios and custom firmware. Implemented a live-updating React frontend for SAR teams, powered by a Supabase PostgreSQL backend. Field-tested devices in dense forests and elevated terrain to validate real-world performance. Developed a rental-based distribution model for park visitors to ensure accessibility and affordability.",
+    "role": "As one of the lead engineers on TALON, I designed and built handheld communication devices, developed the backend integration with Meshtastic protocols, and co-led field validation trials. I also contributed to software engineering for the base station frontend and helped define system deployment strategies for rugged park environments.",
     "technologies": [
       "LoRa",
+      "Meshtastic",
       "React",
-      "Supabase"
+      "TypeScript",
+      "Supabase",
+      "PostgreSQL",
+      "Heltec V3",
+      "LilyGo T-Beam",
+      "GPS",
+      "Docker",
+      "Mesh Networking",
+      "IoT"
     ],
     "links": {
       "final_report": "https://docs.google.com/document/d/13p73Gc5BT_dy6iWrzbpfbcwwrXzn10ZN/edit?usp=sharing&ouid=101327735823146975308&rtpof=true&sd=true"

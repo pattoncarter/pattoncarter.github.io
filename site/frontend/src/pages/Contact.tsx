@@ -3,7 +3,7 @@ import { useContent } from '../api/useContent'
 import { ParticleField } from '../components/ParticleField'
 import { SectionError } from '../components/SectionError'
 
-const socialLabels: Record<string, string> = { github: 'GitHub', linkedin: 'LinkedIn', substack: 'Substack' }
+const socialLabels: Record<string, string> = { github: '@pattoncarter', linkedin: 'Connect professionally', substack: 'Subscribe to my articles' }
 
 export function Contact() {
   const { data, error, loading } = useContent(api.contact)

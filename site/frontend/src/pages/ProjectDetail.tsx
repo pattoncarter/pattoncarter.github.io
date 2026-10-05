@@ -49,12 +49,6 @@ export function ProjectDetail() {
           {project.long_description.split('\n\n').map((para, i) => <p key={i}>{para}</p>)}
         </div>
       )}
-      {project.role && (
-        <section>
-          <h2 className="font-display text-xl font-bold">My Role</h2>
-          <p className="mt-2 max-w-3xl leading-relaxed">{project.role}</p>
-        </section>
-      )}
       {project.highlights && project.highlights.length > 0 && (
         <section>
           <h2 className="font-display text-xl font-bold">Project Highlights</h2>
@@ -63,6 +57,12 @@ export function ProjectDetail() {
               <li key={h} className="rounded-md border border-border bg-surface px-4 py-3 text-sm leading-relaxed">{h}</li>
             ))}
           </ul>
+        </section>
+      )}
+      {project.role && (
+        <section>
+          <h2 className="font-display text-xl font-bold">My Role</h2>
+          <p className="mt-2 max-w-3xl leading-relaxed">{project.role}</p>
         </section>
       )}
       {project.insights && (
