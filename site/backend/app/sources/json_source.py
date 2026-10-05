@@ -19,7 +19,7 @@ class JsonFileSource:
         if not path.is_file():
             raise ContentError(f"missing content file: {path}")
         try:
-            return json.loads(path.read_text())
+            return json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as e:
             raise ContentError(f"invalid content file {path}: {e}") from e
 
@@ -36,11 +36,14 @@ class JsonFileSource:
         return self._load("about", AboutContent)
 
     def get_projects(self) -> list[Project]:
+        path = self.content_dir / "projects.json"
         raw = self._raw("projects")
         try:
+            if not isinstance(raw, list):
+                raise ValueError(f"expected a JSON array, got {type(raw).__name__}")
             return [Project.model_validate(p) for p in raw]
-        except ValidationError as e:
-            raise ContentError(f"invalid content file {self.content_dir / 'projects.json'}: {e}") from e
+        except ValueError as e:  # pydantic.ValidationError is a ValueError subclass
+            raise ContentError(f"invalid content file {path}: {e}") from e
 
     def get_writing(self) -> WritingContent:
         return self._load("writing", WritingContent)

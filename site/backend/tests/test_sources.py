@@ -1,6 +1,6 @@
 import pytest
 
-from app.sources import get_source_for_section, register_source
+from app.sources import _REGISTRY, get_source_for_section
 from app.sources.json_source import ContentError, JsonFileSource
 
 
@@ -40,19 +40,25 @@ def test_json_source_validation_error_raises(content_dir):
         JsonFileSource(content_dir).get_writing()
 
 
+def test_json_source_projects_scalar_root_raises(content_dir):
+    (content_dir / "projects.json").write_text("42")
+    with pytest.raises(ContentError, match="invalid"):
+        JsonFileSource(content_dir).get_projects()
+
+
 def test_unknown_source_name_raises(monkeypatch):
     monkeypatch.setenv("WRITING_SOURCE", "nope")
     with pytest.raises(ValueError, match="nope"):
         get_source_for_section("writing")
 
 
-def test_registered_fake_source_selected(monkeypatch, content_dir):
+def test_registered_fake_source_selected(monkeypatch):
     from app.models import WritingContent
 
     class FakeSource:
         def get_writing(self):
             return WritingContent(posts=[])
 
-    register_source("fake", lambda d: FakeSource())
+    monkeypatch.setitem(_REGISTRY, "fake", lambda d: FakeSource())
     monkeypatch.setenv("WRITING_SOURCE", "fake")
     assert isinstance(get_source_for_section("writing"), FakeSource)
