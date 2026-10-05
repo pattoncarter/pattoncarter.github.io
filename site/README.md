@@ -23,6 +23,7 @@ Terminal 2 (SPA, from `frontend/`):
     # -> http://localhost:8000 (API + SPA from one container)
 
 ## Deploy (VPS or homelab — same commands)
+    # one time only: git clone https://github.com/pattoncarter/pattoncarter.github.io.git && cd pattoncarter.github.io
     git pull && cd site
     cp .env.example .env               # first time only; paste the tunnel token
     docker compose up -d --build
