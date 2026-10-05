@@ -1589,6 +1589,8 @@ git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "f
 **Files:**
 - Modify: `site/frontend/src/App.tsx` (replace placeholder)
 - Modify: `site/frontend/src/index.css` (wrap body rule in `@layer base`)
+- Modify: `site/frontend/src/api/useContent.ts` (add loading flag)
+- Modify: `site/frontend/src/api/client.ts` (include response body in fetch errors)
 - Create: `site/frontend/src/components/Nav.tsx`
 - Create: `site/frontend/src/components/Footer.tsx`
 - Create: `site/frontend/src/components/SectionError.tsx`
@@ -1742,16 +1744,56 @@ with:
 }
 ```
 
-- [ ] **Step 7: Verify the build**
+- [ ] **Step 7: Finalize API layer for page consumers**
+
+Two small changes to the Task 9 files so every page has an explicit three-state shape and bad-content failures are debuggable from the UI.
+
+Replace `site/frontend/src/api/useContent.ts` with:
+```ts
+import { useEffect, useState } from 'react'
+
+export function useContent<T>(loader: () => Promise<T>) {
+  const [data, setData] = useState<T | null>(null)
+  const [error, setError] = useState<unknown>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    loader()
+      .then(d => { if (!cancelled) { setData(d); setLoading(false) } })
+      .catch(e => { if (!cancelled) { setError(e); setLoading(false) } })
+    return () => { cancelled = true }
+    // Pass a stable module-level loader (e.g. `api.about` from api/client.ts),
+    // never an inline closure — an inline arrow changes identity every render
+    // and would refetch on every render.
+  }, [loader])
+
+  return { data, error, loading }
+}
+```
+
+In `site/frontend/src/api/client.ts`, replace the throw line in `fetchJson` with:
+```ts
+  if (!resp.ok) throw new Error(`${path} responded ${resp.status}: ${(await resp.text()).slice(0, 200)}`)
+```
+The backend's 500 body carries the content-file validation detail; surfacing it (SectionError renders `String(error)`) makes bad-content debugging visible without a browser console.
+
+Pages in Tasks 11-15 destructure `{ data, error, loading }`. Inline-ternary pages (Home, Contact) use the three-branch form:
+`{error ? <SectionError .../> : loading || !data ? <p className="font-mono text-muted">loading…</p> : <>...</>}`;
+early-return pages (About, Projects, ProjectDetail, Writing) use `if (error) return <...><SectionError .../></...>` followed by `if (loading || !data) return <...>loading…</...>`.
+(`!data` is a TypeScript narrowing guard — when `loading` is false and there is no error, data is non-null.)
+
+- [ ] **Step 8: Verify the build**
 
 Run (from `site/frontend/`): `npm run build`
 Expected: PASS
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add site/frontend/src/App.tsx site/frontend/src/components site/frontend/src/pages site/frontend/src/index.css
-git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(frontend): routed app shell with nav, footer, and section error UI"
+git add site/frontend/src/App.tsx site/frontend/src/components site/frontend/src/pages site/frontend/src/index.css site/frontend/src/api
+git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(frontend): routed app shell, section error UI, and loading-aware content hook"
 ```
 
 ### Task 11: Home page (hero)
@@ -1774,7 +1816,7 @@ import { SectionError } from '../components/SectionError'
 const TERMINAL_LINES = ['$ ./Carter-Patton', 'profile: loaded', 'status: building resilient systems']
 
 export function Home() {
-  const { data, error } = useContent(api.about)
+  const { data, error, loading } = useContent(api.about)
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col items-start gap-10 px-6 py-24">
@@ -1786,7 +1828,9 @@ export function Home() {
 
       {error ? (
         <SectionError section="home" error={error} />
-      ) : data ? (
+      ) : loading || !data ? (
+        <p className="font-mono text-muted">loading…</p>
+      ) : (
         <>
           <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">
             {data.hero}
@@ -1800,8 +1844,6 @@ export function Home() {
             </Link>
           </div>
         </>
-      ) : (
-        <p className="font-mono text-muted">loading…</p>
       )}
     </main>
   )
@@ -1842,10 +1884,10 @@ import { useContent } from '../api/useContent'
 import { SectionError } from '../components/SectionError'
 
 export function About() {
-  const { data, error } = useContent(api.about)
+  const { data, error, loading } = useContent(api.about)
 
   if (error) return <main className="mx-auto max-w-5xl px-6 py-16"><SectionError section="about" error={error} /></main>
-  if (!data) return <main className="mx-auto max-w-5xl px-6 py-16 font-mono text-muted">loading…</main>
+  if (loading || !data) return <main className="mx-auto max-w-5xl px-6 py-16 font-mono text-muted">loading…</main>
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-16">
@@ -1982,10 +2024,10 @@ import { ProjectCard } from '../components/ProjectCard'
 import { SectionError } from '../components/SectionError'
 
 export function Projects() {
-  const { data, error } = useContent(api.projects)
+  const { data, error, loading } = useContent(api.projects)
 
   if (error) return <main className="mx-auto max-w-5xl px-6 py-16"><SectionError section="projects" error={error} /></main>
-  if (!data) return <main className="mx-auto max-w-5xl px-6 py-16 font-mono text-muted">loading…</main>
+  if (loading || !data) return <main className="mx-auto max-w-5xl px-6 py-16 font-mono text-muted">loading…</main>
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-16">
@@ -2082,10 +2124,10 @@ const linkLabels: Record<string, string> = {
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
-  const { data, error } = useContent(api.projects)
+  const { data, error, loading } = useContent(api.projects)
 
   if (error) return <main className="mx-auto max-w-5xl px-6 py-16"><SectionError section="projects" error={error} /></main>
-  if (!data) return <main className="mx-auto max-w-5xl px-6 py-16 font-mono text-muted">loading…</main>
+  if (loading || !data) return <main className="mx-auto max-w-5xl px-6 py-16 font-mono text-muted">loading…</main>
 
   const project = data.find(p => p.id === id)
   if (!project) {
@@ -2194,10 +2236,10 @@ import { useContent } from '../api/useContent'
 import { SectionError } from '../components/SectionError'
 
 export function Writing() {
-  const { data, error } = useContent(api.writing)
+  const { data, error, loading } = useContent(api.writing)
 
   if (error) return <main className="mx-auto max-w-5xl px-6 py-16"><SectionError section="writing" error={error} /></main>
-  if (!data) return <main className="mx-auto max-w-5xl px-6 py-16 font-mono text-muted">loading…</main>
+  if (loading || !data) return <main className="mx-auto max-w-5xl px-6 py-16 font-mono text-muted">loading…</main>
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-16">
@@ -2326,7 +2368,7 @@ import { SectionError } from '../components/SectionError'
 const socialLabels: Record<string, string> = { github: 'GitHub', linkedin: 'LinkedIn', substack: 'Substack' }
 
 export function Contact() {
-  const { data, error } = useContent(api.contact)
+  const { data, error, loading } = useContent(api.contact)
 
   return (
     <main className="relative mx-auto flex min-h-[70vh] max-w-5xl flex-col justify-center gap-8 overflow-hidden px-6 py-16">
@@ -2335,7 +2377,9 @@ export function Contact() {
         <h1 className="font-display text-3xl font-bold">Contact</h1>
         {error ? (
           <SectionError section="contact" error={error} />
-        ) : data ? (
+        ) : loading || !data ? (
+          <p className="mt-4 font-mono text-muted">loading…</p>
+        ) : (
           <>
             {data.intro && (
               <p className="mt-4 max-w-2xl leading-relaxed text-muted">{data.intro}</p>
@@ -2352,8 +2396,6 @@ export function Contact() {
               ))}
             </div>
           </>
-        ) : (
-          <p className="mt-4 font-mono text-muted">loading…</p>
         )}
       </div>
     </main>
