@@ -2,7 +2,7 @@ import type { AboutContent, ContactInfo, Project, WritingContent } from './types
 
 async function fetchJson<T>(path: string): Promise<T> {
   const resp = await fetch(path)
-  if (!resp.ok) throw new Error(`${path} responded ${resp.status}`)
+  if (!resp.ok) throw new Error(`${path} responded ${resp.status}: ${(await resp.text()).slice(0, 200)}`)
   return (await resp.json()) as T
 }
 
