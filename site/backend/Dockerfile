@@ -23,4 +23,6 @@ EXPOSE 8000
 # non-default PORT in .env cannot silently break compose's service_healthy gate.
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
   CMD ["python", "-c", "import os,urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:%s/api/health' % os.environ.get('PORT','8000'), timeout=2).status==200 else 1)"]
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
+# exec so uvicorn replaces the shell and becomes PID 1 — SIGTERM is then
+# delivered directly (graceful shutdown on docker stop / compose down).
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
