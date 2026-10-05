@@ -72,13 +72,21 @@ def test_project_detail_fields_populated():
     })
     assert p.id == "ghidrapt"
     assert p.highlights == ["h1", "h2"]
+    assert p.long_description == "Para one.\n\nPara two."
+    assert p.insights == "text"
+    assert p.timeline == "Jan 2024 - Jun 2024"
+    assert p.category == "AI"
 
 
 def test_education_date_range_optional():
     e = Education(degree="B.S.", school="S")
     assert e.date_range is None
+    e2 = Education(degree="B.S.", school="S", date_range="2020 - 2024")
+    assert e2.date_range == "2020 - 2024"
 
 
 def test_contact_intro_optional():
     c = ContactInfo(email="a@b.c", socials={})
     assert c.intro is None
+    c2 = ContactInfo(email="a@b.c", socials={}, intro="hi")
+    assert c2.intro == "hi"
