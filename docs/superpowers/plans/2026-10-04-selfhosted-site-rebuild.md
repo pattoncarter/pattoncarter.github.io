@@ -2896,9 +2896,9 @@ Edit `backend/content/*.json` (about, projects, writing, contact). Changes take 
 1. Pin the cloudflared image so deploys are reproducible from git: pull the current release and pin its exact tag —
    ```bash
    docker pull cloudflare/cloudflared
-   docker inspect --format '{{.Config.Image}}' cloudflare/cloudflared:latest
+   docker run --rm cloudflare/cloudflared:latest --version   # -> "cloudflared version <X.Y.Z>"
    ```
-   then set `image: cloudflare/cloudflared:<that-tag>` in `site/docker-compose.yml` (replace the bare `cloudflare/cloudflared`). Re-run `docker compose config -q` to confirm it still parses.
+   then set `image: cloudflare/cloudflared:<X.Y.Z>` in `site/docker-compose.yml` (replace the bare `cloudflare/cloudflared`). Verify the tag exists in the registry (e.g. it resolves to the same digest as `latest`). Re-run `docker compose config -q` to confirm it still parses. (The originally planned `docker inspect --format '{{.Config.Image}}'` fails on Docker 29.x — "map has no entry for key Image" — hence `--version`.)
 2. Fix the stale local-access comment in `site/docker-compose.yml`: the recipe hardcodes `-p 8000:8000` — append "(adjust the host port if you change PORT)" to that comment line.
 
 - [ ] **Step 4: Final acceptance against the spec**
