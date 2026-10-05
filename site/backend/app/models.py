@@ -1,3 +1,4 @@
+"""Wire contract for /api/<section>. Keep in sync with frontend src/api/types.ts."""
 from pydantic import BaseModel
 
 
