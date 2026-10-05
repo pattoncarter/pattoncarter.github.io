@@ -39,7 +39,7 @@ export function Contact() {
                    className="flex items-center rounded-md border border-border px-6 py-3 transition-colors hover:border-accent">
                   <div>
                     <h3 className="font-display font-semibold">{socialCards[key]?.name ?? key}</h3>
-                    <span className="text-sm text-muted">{socialCards[key]?.label}</span>
+                    {socialCards[key]?.label && <span className="text-sm text-muted">{socialCards[key].label}</span>}
                   </div>
                 </a>
               ))}

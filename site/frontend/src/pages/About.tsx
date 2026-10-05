@@ -14,7 +14,7 @@ export function About() {
 
       <section>
         <h2 className="font-display text-xl font-bold text-accent">MY MISSION</h2>
-        {data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed first:mt-0">{p}</p>)}
+        {data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed">{p}</p>)}
         <a
           href={data.resume_url}
           target="_blank"
