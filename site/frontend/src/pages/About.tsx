@@ -20,7 +20,7 @@ export function About() {
           href={data.resume_url}
           target="_blank"
           rel="noreferrer"
-          className="w-fit rounded-md bg-accent px-6 py-3 font-display font-semibold text-bg transition-opacity hover:opacity-80"
+          className="inline-block border border-accent px-5 py-2 font-mono text-accent transition-colors hover:bg-accent hover:text-bg"
         >
           View Résumé
         </a>
