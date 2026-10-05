@@ -15,11 +15,12 @@ export function About() {
       <section>
         <h2 className="font-display text-xl font-bold text-accent">MY MISSION</h2>
         {data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed">{p}</p>)}
+        <div aria-hidden="true" className="my-8 h-px bg-linear-to-r from-transparent via-accent/30 to-transparent" />
         <a
           href={data.resume_url}
           target="_blank"
           rel="noreferrer"
-          className="mt-6 w-fit rounded-md bg-accent px-6 py-3 font-display font-semibold text-bg transition-opacity hover:opacity-80"
+          className="w-fit rounded-md bg-accent px-6 py-3 font-display font-semibold text-bg transition-opacity hover:opacity-80"
         >
           View Résumé
         </a>
