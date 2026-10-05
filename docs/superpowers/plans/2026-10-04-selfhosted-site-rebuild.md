@@ -1994,12 +1994,52 @@ git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "f
 ### Task 13A: Project detail page (/projects/:id)
 
 **Files:**
+- Modify: `site/backend/app/models.py`, `site/backend/tests/test_models.py`, `site/backend/tests/test_content_files.py` (Task 7 review hardening)
 - Create: `site/frontend/src/pages/ProjectDetail.tsx`
 - Modify: `site/frontend/src/App.tsx` (add route + import)
 
-Depends on Task 6A (models carry `id`/`long_description`/`highlights`/`insights`/`timeline`/`category`) and Task 13 (`linkLabels` convention). The live site has a detail page per project; this closes the parity gap the user approved. No new backend endpoint — the page fetches `/api/projects` and finds by id (six projects; YAGNI).
+Depends on Task 6A (models carry `id`/`long_description`/`highlights`/`insights`/`timeline`/`category`) and Task 13 (`linkLabels` convention). The live site has a detail page per project; this closes the parity gap the user approved. No new backend endpoint — the page fetches `/api/projects` and finds by id (six projects; YAGNI). Step 1 folds in two Task 7 quality-review advisories that become user-visible once the detail route ships: pydantic's `extra='ignore'` default still silently drops typo'd *optional* keys in content JSON, and nothing guards against duplicate project ids.
 
-- [ ] **Step 1: Implement ProjectDetail.tsx**
+- [ ] **Step 1: Harden content models + id guard (Task 7 review advisories)**
+
+In `site/backend/app/models.py`, add a shared base so unknown keys in content JSON become validation errors instead of being silently dropped:
+```python
+from pydantic import BaseModel, ConfigDict
+
+
+class ContentModel(BaseModel):
+    """Content contract: unknown keys are data errors, not silently ignored."""
+    model_config = ConfigDict(extra="forbid")
+```
+Change all six content models (`Education`, `AboutContent`, `Project`, `Post`, `WritingContent`, `ContactInfo`) to inherit `ContentModel` instead of `BaseModel`. The committed content files were already verified under `extra='forbid'` during review, so the suite should stay green — if it doesn't, a fixture or content file has a stray key; fix the data, not the model.
+
+Add to `site/backend/tests/test_models.py`:
+```python
+def test_unknown_key_rejected():
+    with pytest.raises(ValidationError):
+        Project.model_validate({"title": "T", "description": "D", "higlights": []})
+```
+
+In `site/backend/tests/test_content_files.py`, replace the current id assertion (the comment + `assert projects and all(p.id for p in projects)`) with:
+```python
+    assert projects, "projects.json is empty"
+    # Every project needs a unique id: the /projects/:id detail route depends on it.
+    missing = [p.title for p in projects if not p.id]
+    assert not missing, f"projects without id: {missing}"
+    ids = [p.id for p in projects]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    assert not dupes, f"duplicate project ids: {dupes}"
+```
+
+Run (from `site/backend/`): `uv run pytest -v` — ALL pass.
+
+Commit:
+```bash
+git add site/backend/app/models.py site/backend/tests/test_models.py site/backend/tests/test_content_files.py
+git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "test(backend): forbid unknown content keys; guard project id uniqueness"
+```
+
+- [ ] **Step 2: Implement ProjectDetail.tsx**
 
 `site/frontend/src/pages/ProjectDetail.tsx`:
 ```tsx
@@ -2099,19 +2139,19 @@ export function ProjectDetail() {
 
 Note: `insights` renders as a single paragraph per the model (`str | None`). If Task 6A's bundle inspection found it holds multiple paragraphs (contains `\n\n`) or is an array, adapt this render to match.
 
-- [ ] **Step 2: Add the route**
+- [ ] **Step 3: Add the route**
 
 In `site/frontend/src/App.tsx`, import `ProjectDetail` from `./pages/ProjectDetail` and add, immediately after the `/projects` route:
 ```tsx
 <Route path="/projects/:id" element={<ProjectDetail />} />
 ```
 
-- [ ] **Step 3: Verify the build**
+- [ ] **Step 4: Verify the build**
 
 Run (from `site/frontend/`): `npm run build`
 Expected: PASS
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add site/frontend/src/pages/ProjectDetail.tsx site/frontend/src/App.tsx
@@ -2451,9 +2491,17 @@ git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "f
 - Create: `site/backend/Dockerfile`
 - Create: `site/.dockerignore`
 
-Build context is `site/` (compose `context: .`), so the Dockerfile addresses both `frontend/` and `backend/`. The image deliberately contains **no** `backend/content/` — content arrives at runtime via the read-only bind mount, so section endpoints returning data in Task 19 proves the volume wiring. `backend/requirements.txt` was already exported and committed in Chunk 1 (Task 7) — nothing to regenerate here.
+Build context is `site/` (compose `context: .`), so the Dockerfile addresses both `frontend/` and `backend/`. The image deliberately contains **no** `backend/content/` — content arrives at runtime via the read-only bind mount, so section endpoints returning data in Task 19 proves the volume wiring. `backend/requirements.txt` was exported and committed in Chunk 1 (Task 7); Step 1 verifies it is still in sync with `uv.lock` before the build relies on it.
 
-- [ ] **Step 1: Write the Dockerfile**
+- [ ] **Step 1: Verify requirements.txt is in sync with the lockfile**
+
+Run (from `site/backend/`):
+```bash
+uv export --no-dev --no-hashes -o requirements.txt && git diff --exit-code requirements.txt
+```
+Expected: exit 0, no diff. If a diff appears, dependencies changed without a re-export — inspect it and commit the regenerated file first (`git add site/backend/requirements.txt` + one-shot identity commit `chore(backend): refresh pinned requirements`).
+
+- [ ] **Step 2: Write the Dockerfile**
 
 `site/backend/Dockerfile`:
 ```dockerfile
@@ -2485,7 +2533,7 @@ HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
 ```
 
-- [ ] **Step 2: Write .dockerignore**
+- [ ] **Step 3: Write .dockerignore**
 
 `site/.dockerignore` (keeps the tunnel token and bulky/generated dirs out of the build context):
 ```
@@ -2499,7 +2547,7 @@ backend/.pytest_cache/
 **/__pycache__/
 ```
 
-- [ ] **Step 3: Build the image**
+- [ ] **Step 4: Build the image**
 
 Run (from `site/`):
 ```bash
@@ -2507,7 +2555,7 @@ docker compose build app
 ```
 Expected: both stages complete; final image tagged `site-app` (compose's default `<project>-app`). If stage 1 fails with an npm ci lockfile error, `package-lock.json` is missing or stale — re-run Task 8 Step 7 and commit the lockfile.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add site/backend/Dockerfile site/.dockerignore
