@@ -197,3 +197,14 @@ docker compose up -d --build
 ## Out of scope (YAGNI)
 
 CMS/admin UI, auth, database, CI/CD pipeline, analytics, SSR, separate web-server container, CORS config, i18n, frontend unit-test framework.
+
+## Amendment (2026-10-04, user-approved during execution)
+
+Task 6 (content extraction) surfaced a parity gap against the live site: per-project detail pages (`/projects/:id`) with long descriptions, "Project Highlights", "Insights & Learnings", and timelines; education entries carry date ranges; Contact has an intro line. The user chose **full parity**. Changes to this design:
+
+- `Project` gains optional fields: `id`, `long_description`, `highlights: list[str] = []`, `insights`, `timeline`, `category` (all defaulted — backward-compatible with existing content).
+- `Education` gains optional `date_range`.
+- `ContactInfo` gains optional `intro`.
+- New frontend route `/projects/:id` (ProjectDetail page) renders the detail fields; ProjectCard titles link to it. No new backend endpoint — the page fetches `/api/projects` and finds by id. The TS mirror in `src/api/types.ts` gains the same fields.
+- All detail content is seeded byte-exact from the production bundle into `content/*.json` (plan Task 6A).
+- Parity acceptance criterion extended: every field present on a live project detail page appears on the corresponding `/projects/:id` route.

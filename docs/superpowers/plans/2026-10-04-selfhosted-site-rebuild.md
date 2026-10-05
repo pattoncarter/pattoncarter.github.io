@@ -1074,6 +1074,112 @@ git add site/backend/content
 git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(backend): seed content JSON extracted from current production bundle"
 ```
 
+### Task 6A: Extend content models for full parity (project detail, education dates, contact intro)
+
+**Files:**
+- Modify: `site/backend/app/models.py`
+- Modify: `site/backend/tests/test_models.py`
+- Modify: `site/backend/content/projects.json`, `site/backend/content/about.json`, `site/backend/content/contact.json`
+
+Context (user-approved amendment): the live site has per-project detail pages (`/projects/:id`) with long descriptions, "Project Highlights", "Insights & Learnings", and a timeline; education entries carry date ranges; Contact has an intro line. None of that is representable in the current models. This task extends the wire contract with optional fields (backward-compatible — every new field has a default) and seeds all detail content byte-exact from the production bundle (`assets/index-D7rXIsh4.js` at repo root, READ-ONLY). The frontend consumes these fields in Task 13A; the TS mirror is already updated in Task 9.
+
+- [ ] **Step 1: Inspect the bundle's detail field shapes**
+
+Run (from repo root):
+```bash
+python3 - <<'EOF'
+import re
+src = open("assets/index-D7rXIsh4.js", encoding="utf-8").read()
+i = src.find("longDescription")
+print(repr(src[i-300:i+2000]))
+EOF
+```
+Expected: a project object with fields like `id`, `title`, `description`, `longDescription`, `highlights` (array of strings), `insights`, `timeline`, `category`. **If the actual shape differs** (e.g. `insights` is an array, or `highlights` items are objects), adapt the model in Step 4 to match the bundle exactly, and report the deviation — do not force the bundle data into a different shape.
+
+- [ ] **Step 2: Write failing tests**
+
+Append to `site/backend/tests/test_models.py`:
+```python
+def test_project_detail_fields_optional():
+    p = Project(title="T", description="D")
+    assert p.id is None
+    assert p.long_description is None
+    assert p.highlights == []
+    assert p.insights is None
+    assert p.timeline is None
+    assert p.category is None
+
+
+def test_project_detail_fields_populated():
+    p = Project.model_validate({
+        "id": "ghidrapt", "title": "T", "description": "D",
+        "long_description": "Para one.\n\nPara two.",
+        "highlights": ["h1", "h2"], "insights": "text",
+        "timeline": "Jan 2024 - Jun 2024", "category": "AI",
+        "technologies": [], "links": {},
+    })
+    assert p.id == "ghidrapt"
+    assert p.highlights == ["h1", "h2"]
+
+
+def test_education_date_range_optional():
+    e = Education(degree="B.S.", school="S")
+    assert e.date_range is None
+
+
+def test_contact_intro_optional():
+    c = ContactInfo(email="a@b.c", socials={})
+    assert c.intro is None
+```
+
+- [ ] **Step 3: Run tests to verify they fail**
+
+Run (from `site/backend/`): `uv run pytest tests/test_models.py -v`
+Expected: the four new tests FAIL (AttributeError), the existing 8 pass.
+
+- [ ] **Step 4: Extend the models**
+
+In `site/backend/app/models.py`:
+- `Education`: add `date_range: str | None = None`
+- `Project`: add `id: str | None = None`, `long_description: str | None = None`, `highlights: list[str] = []`, `insights: str | None = None`, `timeline: str | None = None`, `category: str | None = None` (keep all existing fields and their order)
+- `ContactInfo`: add `intro: str | None = None`
+- `AboutContent`, `Post`, `WritingContent`: unchanged
+
+- [ ] **Step 5: Run the full backend suite**
+
+Run (from `site/backend/`): `uv run pytest -v`
+Expected: ALL pass.
+
+- [ ] **Step 6: Seed detail content byte-exact from the bundle**
+
+For each of the 6 projects in `content/projects.json`, add from the corresponding bundle project object: `id` (e.g. `"ghidrapt"`), `long_description`, `highlights`, `insights`, `timeline`, `category`. Also fix Modjulo's `description` to the bundle text "An AI-powered lifelong learning platform that uses LLMs and knowledge graphs to adaptively guide learners—currently in early development." (Task 6 deliberately kept plan text here as a disclosed residual — replace it now).
+
+In `content/about.json`: add `date_range` to each education entry from the bundle (e.g. "Jan. 2025 - PRESENT", "Aug. 2020 - May 2024" — verify exact strings and spacing in the bundle before writing).
+
+In `content/contact.json`: add `"intro": "Let's connect. I'm always open to discussing new ideas, collaborations, or intriguing challenges."` (verify byte-exact against the bundle, including apostrophe style; keep the file ASCII-only with `\uXXXX` escapes if that is what the bundle string requires).
+
+- [ ] **Step 7: Endpoint check**
+
+Run (from `site/backend/`):
+```bash
+uv run uvicorn app.main:app --port 8013 &
+sleep 2 && curl -s localhost:8013/api/projects | python3 -c "import json,sys; [print(p['id'], p.get('category'), len(p.get('highlights') or [])) for p in json.load(sys.stdin)]"
+curl -s localhost:8013/api/contact | python3 -m json.tool
+```
+Expected: six lines of `(id, category, highlight-count)` with non-null ids; contact JSON shows the intro string.
+
+Then, as a **separate command** (see Shell note in the header — cleanup must not share a block with the launch line, and the bracketed port prevents self-matching):
+```bash
+pkill -f "uvicorn app.main:app --port 801[3]" || true
+```
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add site/backend/app/models.py site/backend/tests/test_models.py site/backend/content
+git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(backend): extend content models for full parity (project detail, education dates, contact intro)"
+```
+
 ### Task 7: Full backend test suite green + lockfile export
 
 **Files:**
@@ -1307,6 +1413,7 @@ export interface Education {
   degree: string
   school: string
   description: string
+  date_range: string | null
 }
 
 export interface AboutContent {
@@ -1322,8 +1429,14 @@ export interface AboutContent {
 }
 
 export interface Project {
+  id: string | null
   title: string
   description: string
+  long_description: string | null
+  highlights: string[]
+  insights: string | null
+  timeline: string | null
+  category: string | null
   technologies: string[]
   links: Record<string, string>
   image_url: string | null
@@ -1346,6 +1459,7 @@ export interface WritingContent {
 
 export interface ContactInfo {
   email: string
+  intro: string | null
   socials: Record<string, string>
 }
 ```
@@ -1672,6 +1786,7 @@ export function About() {
           {data.education.map(e => (
             <article key={e.degree} className="rounded-md border border-border bg-surface p-5">
               <h3 className="font-display font-semibold">{e.degree}</h3>
+              {e.date_range && <p className="mt-1 font-mono text-xs text-muted">{e.date_range}</p>}
               <p className="text-sm text-muted">{e.school}</p>
               {e.description && <p className="mt-2 text-sm leading-relaxed">{e.description}</p>}
             </article>
@@ -1714,9 +1829,17 @@ git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "f
 
 `site/frontend/src/components/ProjectCard.tsx`:
 ```tsx
+import { Link } from 'react-router-dom'
 import type { Project } from '../api/types'
 
-const linkLabels: Record<string, string> = { repo: 'Repository', report: 'Report', site: 'Site' }
+// Same label map as the detail page (Task 13A) — keep in sync.
+const linkLabels: Record<string, string> = {
+  repo: 'Repository',
+  report: 'Report',
+  site: 'Site',
+  final_report: 'Final Report',
+  final_presentation: 'Presentation',
+}
 
 export function ProjectCard({ project }: { project: Project }) {
   return (
@@ -1725,7 +1848,13 @@ export function ProjectCard({ project }: { project: Project }) {
         <img src={project.image_url} alt={project.title} className="h-40 w-full rounded-md object-cover" />
       )}
       <div className="flex items-start justify-between gap-3">
-        <h3 className="font-display text-lg font-semibold">{project.title}</h3>
+        {/* Only the title links (not the whole card) — the link row below contains
+            anchors, and wrapping them in a card-level Link would be invalid HTML. */}
+        <h3 className="font-display text-lg font-semibold">
+          <Link to={project.id ? `/projects/${project.id}` : '/projects'} className="hover:text-accent hover:underline">
+            {project.title}
+          </Link>
+        </h3>
         {project.status && (
           <span className="whitespace-nowrap rounded bg-accent/10 px-2 py-1 font-mono text-xs text-accent">
             {project.status}
@@ -1796,6 +1925,132 @@ git add site/frontend/src/components/ProjectCard.tsx site/frontend/src/pages/Pro
 git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(frontend): projects page with project cards"
 ```
 
+### Task 13A: Project detail page (/projects/:id)
+
+**Files:**
+- Create: `site/frontend/src/pages/ProjectDetail.tsx`
+- Modify: `site/frontend/src/App.tsx` (add route + import)
+
+Depends on Task 6A (models carry `id`/`long_description`/`highlights`/`insights`/`timeline`/`category`) and Task 13 (`linkLabels` convention). The live site has a detail page per project; this closes the parity gap the user approved. No new backend endpoint — the page fetches `/api/projects` and finds by id (six projects; YAGNI).
+
+- [ ] **Step 1: Implement ProjectDetail.tsx**
+
+`site/frontend/src/pages/ProjectDetail.tsx`:
+```tsx
+import { Link, useParams } from 'react-router-dom'
+import { api } from '../api/client'
+import { useContent } from '../api/useContent'
+import { SectionError } from '../components/SectionError'
+
+// Same label map as ProjectCard (Task 13) — keep in sync.
+const linkLabels: Record<string, string> = {
+  repo: 'Repository',
+  report: 'Report',
+  site: 'Site',
+  final_report: 'Final Report',
+  final_presentation: 'Presentation',
+}
+
+export function ProjectDetail() {
+  const { id } = useParams<{ id: string }>()
+  const { data, error } = useContent(api.projects)
+
+  if (error) return <main className="mx-auto max-w-5xl px-6 py-16"><SectionError section="projects" error={error} /></main>
+  if (!data) return <main className="mx-auto max-w-5xl px-6 py-16 font-mono text-muted">loading…</main>
+
+  const project = data.find(p => p.id === id)
+  if (!project) {
+    return (
+      <main className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-16">
+        <p className="font-mono text-muted">Project not found.</p>
+        <Link to="/projects" className="w-fit text-sm text-accent hover:underline">← Back to Projects</Link>
+      </main>
+    )
+  }
+
+  return (
+    <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-16">
+      <Link to="/projects" className="w-fit text-sm text-accent hover:underline">← Back to Projects</Link>
+      {project.image_url && (
+        <img src={project.image_url} alt={project.title} className="h-64 w-full rounded-lg object-cover" />
+      )}
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="font-display text-3xl font-bold">{project.title}</h1>
+        {project.category && (
+          <span className="rounded bg-accent/10 px-2 py-1 font-mono text-xs text-accent">{project.category}</span>
+        )}
+      </div>
+      {project.timeline && <p className="font-mono text-sm text-muted">{project.timeline}</p>}
+      <p className="max-w-3xl leading-relaxed">{project.description}</p>
+      {project.long_description && (
+        <div className="flex max-w-3xl flex-col gap-4 leading-relaxed">
+          {project.long_description.split('\n\n').map((para, i) => <p key={i}>{para}</p>)}
+        </div>
+      )}
+      {project.role && (
+        <section>
+          <h2 className="font-display text-xl font-bold">My Role</h2>
+          <p className="mt-2 max-w-3xl leading-relaxed">{project.role}</p>
+        </section>
+      )}
+      {project.highlights && project.highlights.length > 0 && (
+        <section>
+          <h2 className="font-display text-xl font-bold">Project Highlights</h2>
+          <ul className="mt-4 flex flex-col gap-3">
+            {project.highlights.map(h => (
+              <li key={h} className="rounded-md border border-border bg-surface px-4 py-3 text-sm leading-relaxed">{h}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {project.insights && (
+        <section>
+          <h2 className="font-display text-xl font-bold">Insights &amp; Learnings</h2>
+          <p className="mt-2 max-w-3xl leading-relaxed">{project.insights}</p>
+        </section>
+      )}
+      {project.technologies && project.technologies.length > 0 && (
+        <ul className="flex flex-wrap gap-2">
+          {project.technologies.map(t => (
+            <li key={t} className="rounded border border-border px-2 py-1 font-mono text-xs text-muted">{t}</li>
+          ))}
+        </ul>
+      )}
+      {project.links && Object.keys(project.links).length > 0 && (
+        <div className="flex flex-wrap gap-4 text-sm">
+          {Object.entries(project.links).map(([key, url]) => (
+            <a key={key} href={url} target="_blank" rel="noreferrer" className="text-accent hover:underline">
+              {linkLabels[key] ?? key}
+            </a>
+          ))}
+        </div>
+      )}
+    </main>
+  )
+}
+```
+
+Note: `insights` renders as a single paragraph per the model (`str | None`). If Task 6A's bundle inspection found it holds multiple paragraphs (contains `\n\n`) or is an array, adapt this render to match.
+
+- [ ] **Step 2: Add the route**
+
+In `site/frontend/src/App.tsx`, import `ProjectDetail` from `./pages/ProjectDetail` and add, immediately after the `/projects` route:
+```tsx
+<Route path="/projects/:id" element={<ProjectDetail />} />
+```
+
+- [ ] **Step 3: Verify the build**
+
+Run (from `site/frontend/`): `npm run build`
+Expected: PASS
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add site/frontend/src/pages/ProjectDetail.tsx site/frontend/src/App.tsx
+git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(frontend): project detail page with highlights, insights, and timeline"
+```
+
 ### Task 14: Writing page
 
 **Files:**
@@ -1844,6 +2099,8 @@ export function Writing() {
   )
 }
 ```
+
+Note: posts render in array order deliberately — the live site does not sort by date (verified: no post-sort call exists in the production bundle). Do not reorder `content/writing.json` or add a sort during parity work.
 
 - [ ] **Step 2: Verify the build**
 
@@ -1951,9 +2208,9 @@ export function Contact() {
           <SectionError section="contact" error={error} />
         ) : data ? (
           <>
-            <p className="mt-4 max-w-2xl leading-relaxed text-muted">
-              Connect professionally or reach out directly.
-            </p>
+            {data.intro && (
+              <p className="mt-4 max-w-2xl leading-relaxed text-muted">{data.intro}</p>
+            )}
             <div className="mt-6 flex flex-wrap gap-4">
               <a href={`mailto:${data.email}`} className="rounded-md bg-accent px-6 py-3 font-display font-semibold text-bg transition-opacity hover:opacity-80">
                 {data.email}
@@ -2009,11 +2266,12 @@ Expected: Vite serves on http://localhost:5173 and proxies `/api` to the backend
 
 - [ ] **Step 2: Walk every route and diff against the live site**
 
-Open http://localhost:5173 and https://pattoncarter.github.io side by side. For each of `/`, `/about`, `/projects`, `/writing`, `/contact`:
+Open http://localhost:5173 and https://pattoncarter.github.io side by side. For each of `/`, `/about`, `/projects`, a project detail page (pick any real id from `content/projects.json`), `/writing`, `/contact`:
 - Every text block present on the live site appears (copy, order, emphasis).
 - Every link points to the same target.
 - Every image on the live site is present (assign Unsplash URLs found in Task 6 Step 5 into `content/projects.json` if missing).
 - The terminal motif on `/` matches the live site's terminal block (the lines were copied into `TERMINAL_LINES` in `Home.tsx` during Task 11 — fix them there if wrong).
+- On a project detail page, every field present for that project in the production bundle appears (long description, highlights, insights, timeline, category) — section order/styling may be refined, content must not be missing.
 - Note palette/spacing differences and adjust `src/index.css` `@theme` values + component classes to match.
 
 - [ ] **Step 3: Verify the built frontend served by the real backend (production path)**
@@ -2026,6 +2284,7 @@ sleep 2
 curl -s localhost:8012/api/health
 for s in about projects writing contact; do curl -s localhost:8012/api/$s | head -c 100; echo; done
 curl -s localhost:8012/about | grep -o 'id="root"'   # SPA shell served for deep link
+curl -s "localhost:8012/projects/$(python3 -c "import json;print(json.load(open('content/projects.json'))[0]['id'])")" | grep -o 'id="root"'   # detail-route deep link also serves the shell
 curl -s localhost:8012/assets/$(ls ../frontend/dist/assets | grep '\.js$' | head -1) | head -c 80
 ```
 Expected: `{"status":"ok"}`; each of the four section endpoints returns JSON (output starts with `{` or `[` — `/api/projects` is a top-level array), not a plain-text `ContentError` message — this is the check that proves the real `content/*.json` files pass pydantic validation, because the backend test suite uses `tmp_path` fixtures and never reads these files; the `/about` check prints `id="root"` (SPA shell served, not a JSON 404); the JS asset returns JavaScript, not the SPA shell (static file precedence works).
