@@ -6,6 +6,7 @@ class Education(BaseModel):
     degree: str
     school: str
     description: str = ""
+    date_range: str | None = None
 
 
 class AboutContent(BaseModel):
@@ -28,6 +29,12 @@ class Project(BaseModel):
     image_url: str | None = None
     role: str | None = None
     status: str | None = None  # e.g. "IN PROGRESS"
+    id: str | None = None
+    long_description: str | None = None
+    highlights: list[str] = []
+    insights: str | None = None
+    timeline: str | None = None
+    category: str | None = None
 
 
 class Post(BaseModel):
@@ -46,3 +53,4 @@ class WritingContent(BaseModel):
 class ContactInfo(BaseModel):
     email: str
     socials: dict[str, str] = {}
+    intro: str | None = None

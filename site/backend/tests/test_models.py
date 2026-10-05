@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.models import AboutContent, ContactInfo, Post, Project, WritingContent
+from app.models import AboutContent, ContactInfo, Education, Post, Project, WritingContent
 
 
 def test_post_optional_fields_default_to_none():
@@ -50,3 +50,35 @@ def test_writing_defaults():
 def test_post_serialization_includes_optional_keys():
     p = Post(title="T", url="https://x")
     assert p.model_dump() == {"title": "T", "url": "https://x", "date": None, "excerpt": None}
+
+
+def test_project_detail_fields_optional():
+    p = Project(title="T", description="D")
+    assert p.id is None
+    assert p.long_description is None
+    assert p.highlights == []
+    assert p.insights is None
+    assert p.timeline is None
+    assert p.category is None
+
+
+def test_project_detail_fields_populated():
+    p = Project.model_validate({
+        "id": "ghidrapt", "title": "T", "description": "D",
+        "long_description": "Para one.\n\nPara two.",
+        "highlights": ["h1", "h2"], "insights": "text",
+        "timeline": "Jan 2024 - Jun 2024", "category": "AI",
+        "technologies": [], "links": {},
+    })
+    assert p.id == "ghidrapt"
+    assert p.highlights == ["h1", "h2"]
+
+
+def test_education_date_range_optional():
+    e = Education(degree="B.S.", school="S")
+    assert e.date_range is None
+
+
+def test_contact_intro_optional():
+    c = ContactInfo(email="a@b.c", socials={})
+    assert c.intro is None

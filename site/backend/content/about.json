@@ -22,12 +22,14 @@
     {
       "degree": "M.S. in Artificial Intelligence",
       "school": "University of Texas at Austin",
-      "description": "Multidisciplinary program focused on machine learning, neural networks, and the ethical, secure deployment of AI systems in real-world environments. Emphasis on robust model architecture, AI system resilience, and cybersecurity in ML pipelines."
+      "description": "Multidisciplinary program focused on machine learning, neural networks, and the ethical, secure deployment of AI systems in real-world environments. Emphasis on robust model architecture, AI system resilience, and cybersecurity in ML pipelines.",
+      "date_range": "Jan. 2025 - PRESENT"
     },
     {
       "degree": "B.S. Computer Engineering",
       "school": "Texas A&M University",
-      "description": "Undergraduate program blending computer science and electrical engineering. Gained hands-on experience with microcontroller programming, real-time systems, and hardware-software integration, while also building a strong foundation in systems programming, computer architecture, and network protocols."
+      "description": "Undergraduate program blending computer science and electrical engineering. Gained hands-on experience with microcontroller programming, real-time systems, and hardware-software integration, while also building a strong foundation in systems programming, computer architecture, and network protocols.",
+      "date_range": "Aug. 2020 - May 2024"
     }
   ],
   "resume_url": "https://drive.google.com/file/d/11OcH409ToCZbbFgkzY076zRFmfSpHlxK/view",
