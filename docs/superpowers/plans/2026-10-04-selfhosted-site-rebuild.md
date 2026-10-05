@@ -2503,19 +2503,119 @@ npm run dev
 ```
 Expected: Vite serves on http://localhost:5173 and proxies `/api` to the backend.
 
-- [ ] **Step 2: Walk every route and diff against the live site**
+- [ ] **Step 2: Apply bundle-verified parity fixes + run the audit**
 
-Open http://localhost:5173 and https://pattoncarter.github.io side by side. For each of `/`, `/about`, `/projects`, a project detail page (pick any real id from `content/projects.json`), `/writing`, `/contact`:
-- Every text block present on the live site appears (copy, order, emphasis).
-- Every link points to the same target.
-- Every image on the live site is present (assign Unsplash URLs found in Task 6 Step 5 into `content/projects.json` if missing).
-- The terminal motif on `/` matches the live site: a single green `$ ./Carter-Patton` line with a blinking block cursor under the H1 (hardcoded in `Home.tsx` per bundle extraction — adjust styling there if off).
-- Known v1 gap (accepted, do not attempt here): the live hero's bordered oscilloscope widget is an interactive canvas component that is not rebuilt. Everything else must match.
-- On a project detail page, every field present for that project in the production bundle appears (long description, highlights, insights, timeline, category) — section order/styling may be refined, content must not be missing.
-- Known discrepancy (found in Task 12 review): `data.mission` in `content/about.json` is a multi-paragraph string (`\n\n`-separated) and the live site renders it as separate `<p>` elements, but `About.tsx` renders it in one `<p>`, collapsing the break into a space. Fix: render `{data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed">{p}</p>)}` (drop the `mt-4` on the first paragraph or use `first:mt-0`). No other about field contains `\n\n` (verified: only `mission`).
-- Known robustness fix (found in Task 13 review): in `ProjectCard.tsx`, change the card key from `key={p.title}` to `key={p.id ?? p.title}` (every project carries a unique non-null id; title has no uniqueness guarantee). One line.
-- Do NOT "fix" Modjulo's link label: the production bundle renders `links:[{type:"Coming Soon",url:"https://modjulo.ai"}]` — a live URL labeled "Coming Soon" is verified parity with the live site (re-checked against the bundle 2026-10-04). Leave it.
-- Palette tokens are already set from the production theme (Task 11); only fine-tune per-component classes (borders, button styles, spacing) if a section still looks off.
+The implementer has no browser, so "walking the live site" is done against the production bundle at repo root `assets/index-D7rXIsh4.js` (READ-ONLY — never modify anything outside `site/`). The controller extracted every content region of the live site from that bundle on 2026-10-04. Apply each fix below EXACTLY, then run the audit script at the end of this step; it must report only the two documented exceptions.
+
+**Content fixes (`site/backend/content/`):**
+1. `projects.json` — four `role` values are wrong (the Task 6 extraction concatenated highlight bullets instead of taking the bundle's actual role field). Replace with these exact strings:
+   - `hybridrag-oncology-assistant`: `I led the development of the HybridRAG Oncology Research Assistant, focusing on integrating hybrid retrieval mechanisms and ensuring the explainability of the AI-generated responses. My responsibilities included designing the system architecture, implementing the knowledge graph, and fine-tuning the language models for optimal performance in the oncology domain.`
+   - `alfred-ai-assistant`: `I’m the sole designer and engineer of ALFRED, leading everything from architectural design to CUDA setup, speech integration, tool execution, and future RLHF training strategy.` (the bundle uses a curly apostrophe in "I’m" — keep it)
+   - `artificial-sunlight-system`: `As co-creator, I led the system architecture design, MQTT communication stack implementation, power delivery engineering, and circuit safety. I also contributed to aesthetic design, soldering, and final presentation.`
+   - `talon-mesh-communication`: `As one of the lead engineers on TALON, I designed and built handheld communication devices, developed the backend integration with Meshtastic protocols, and co-led field validation trials. I also contributed to software engineering for the base station frontend and helped define system deployment strategies for rugged park environments.`
+2. `projects.json` — all six `technologies` arrays are subsets of the live lists. Replace each with the full bundle list:
+   - `ghidrapt`: `["Ghidra", "Java", "Python", "ChatGPT API", "Reverse Engineering", "Static Analysis", "OpenAI"]`
+   - `hybridrag-oncology-assistant`: `["Python", "PyTorch", "Transformers", "FAISS", "Neo4j", "Hugging Face", "Knowledge Graphs", "Retrieval-Augmented Generation"]`
+   - `modjulo-ai-learning-platform`: `["LLMs", "Knowledge Graphs", "Spaced Repetition", "Python", "React", "Vector Search", "LangChain", "Neo4j", "NLP"]`
+   - `alfred-ai-assistant`: `["llama.cpp", "MCP", "FastAPI", "Whisper.cpp", "Vosk", "Coqui TTS", "Piper", "Docker", "Python", "Ubuntu", "NVIDIA CUDA", "Tailscale", "Conda"]`
+   - `artificial-sunlight-system`: `["ESP32", "MQTT", "Mosquitto", "FastLED", "RGBW LED", "Python", "Raspberry Pi", "WiFi", "Python Weather API", "Custom Circuit Design", "3D Printed Hardware"]`
+   - `talon-mesh-communication`: `["LoRa", "Meshtastic", "React", "TypeScript", "Supabase", "PostgreSQL", "Heltec V3", "LilyGo T-Beam", "GPS", "Docker", "Mesh Networking", "IoT"]`
+3. `writing.json` — reorder `posts` to the live display order (the bundle's array order, which the live site renders unsorted): first `S:N 0x02 – More Cyber Budget Cuts…`, then `S:N 0x01 – DeepSeek on the DarkWeb…`, then `The Big 3 in AI Are Not Who You Think`. Change NO field values — move whole objects only.
+
+**Frontend copy/structure fixes:**
+4. `About.tsx` — restructure to match the live section (live headings verified: section "ABOUT ME", subsections "MY MISSION", "EDUCATION", "BEYOND THE CODE", "CORE COMPETENCIES"):
+   - H1 becomes `About Me`.
+   - Section heading `My Mission`: render the mission as one `<p>` per `\n\n` paragraph (fixes the Task 12 collapse finding: `{data.mission.split('\n\n').map((p, i) => <p key={i} className="mt-4 max-w-3xl leading-relaxed first:mt-0">{p}</p>)}`), followed by the resume button whose label becomes `View Résumé` (live uses the cedilla; ours currently says "View Resume").
+   - Section heading `Education`: content unchanged.
+   - New section heading `Beyond the Code`: the interests paragraph moves here (out of the first section).
+   - Section heading `Core Competencies`: grid unchanged.
+   - Quote block: add a hardcoded terminal line directly above it, matching the live site: `<p className="font-mono text-sm text-accent">$ cat philosophy.txt</p>`.
+5. `ProjectDetail.tsx` — reorder to match the live detail page: move the `Project Highlights` section BEFORE the `My Role` section (live order: description, long description, highlights, role, insights).
+6. `Writing.tsx` — format dates exactly like the live site's renderer: `new Date(post.date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, '.')` (renders e.g. `05.06.2025` instead of raw ISO).
+7. `Contact.tsx` — replace `socialLabels` with the live card labels: `{ github: '@pattoncarter', linkedin: 'Connect professionally', substack: 'Subscribe to my articles' }`.
+8. `Nav.tsx` — match the live chrome: logo becomes `C:/P` (the `/` in accent color); five links including HOME, uppercase labels rendered with a terminal prefix in accent color, e.g. `./ABOUT` (live nav items: HOME, ABOUT, PROJECTS, WRITING, CONTACT).
+9. `Footer.tsx` — left side becomes `<CARTER> PATTON` (angle brackets in accent color); right side `© {year} All Rights Reserved`.
+10. `ProjectCard.tsx` — one-line robustness fix from the Task 13 review: card key `key={p.title}` → `key={p.id ?? p.title}`.
+
+**Known v1 gaps (accepted — do NOT attempt):** the hero's bordered oscilloscope widget; mobile swipe navigation + tutorial overlay; the projects section's interactive category filter buttons; the live nav's `$ menu` mobile toggle.
+**Do NOT "fix" Modjulo's link label:** the production bundle renders `links:[{type:"Coming Soon",url:"https://modjulo.ai"}]` — a live URL labeled "Coming Soon" is verified parity (re-checked 2026-10-04).
+**ALFRED placeholder links:** the bundle's ALFRED entry has two placeholder URLs (`github.com/yourusername/alfred`, `your-demo-link.com`) that were intentionally omitted from content in Task 6 — leave them omitted; the audit below documents this as an expected exception.
+
+Then write `/tmp/parity_audit.py` with EXACTLY this content and run it from the repo root:
+```python
+import json, re, sys
+bundle = open('assets/index-D7rXIsh4.js', encoding='utf-8').read()
+def norm(s): return re.sub(r'\s+', ' ', s).strip()
+nb = norm(bundle)
+
+def extract_obj(anchor):
+    i = bundle.find(anchor)
+    if i < 0: return None
+    start = bundle.rfind('{', 0, i)
+    depth = 0; j = start; in_str = False; esc = False
+    while j < len(bundle):
+        c = bundle[j]
+        if in_str:
+            if esc: esc = False
+            elif c == '\\': esc = True
+            elif c == '"': in_str = False
+        else:
+            if c == '"': in_str = True
+            elif c == '{': depth += 1
+            elif c == '}':
+                depth -= 1
+                if depth == 0: return bundle[start:j+1]
+        j += 1
+
+def parse(t):
+    return json.loads(re.sub(r'([{,])\s*([A-Za-z_]\w*)\s*:', r'\1"\2":', t))
+
+fails = []
+ps = {p['id']: p for p in json.load(open('site/backend/content/projects.json'))}
+mapping = {'title':'title','description':'description','role':'role','longDescription':'long_description',
+           'highlights':'highlights','insights':'insights','timeline':'timeline','category':'category',
+           'image':'image_url','technologies':'technologies'}
+for pid, j in ps.items():
+    b = parse(extract_obj(f'id:"{pid}"'))
+    for bf, jf in mapping.items():
+        if b.get(bf) != j.get(jf):
+            fails.append(f'{pid}.{jf}')
+    bl = [x['url'] for x in (b.get('links') or [])]
+    jl = list((j.get('links') or {}).values())
+    if pid == 'alfred-ai-assistant':
+        if sorted(jl) != []: fails.append('alfred links should stay omitted')
+    elif sorted(bl) != sorted(jl):
+        fails.append(f'{pid}.links')
+
+fr = parse(extract_obj('const FR=['))
+w = json.load(open('site/backend/content/writing.json'))
+if [p['title'] for p in fr] != [p['title'] for p in w['posts']]:
+    fails.append('writing post order')
+for f in ('title','summary','date'):
+    for bp, jp in zip(fr, w['posts']):
+        jf = 'excerpt' if f == 'summary' else f
+        if bp.get(f) != jp.get(jf): fails.append(f'writing.{jf}: {jp["title"][:30]}')
+
+for name in ('about.json','contact.json'):
+    def walk(o, out):
+        if isinstance(o, str):
+            for part in o.split('\n\n'):
+                if len(part.strip()) > 15: out.append(norm(part))
+        elif isinstance(o, dict):
+            for v in o.values(): walk(v, out)
+        elif isinstance(o, list):
+            for v in o: walk(v, out)
+    strs = []
+    walk(json.load(open('site/backend/content/' + name)), strs)
+    for s in strs:
+        if s not in nb and 'Architecting Resilient Futures' != s:
+            fails.append(f'{name}: {s[:50]}')
+
+if fails:
+    print('PARITY AUDIT FAIL:'); [print(' -', f) for f in fails]; sys.exit(1)
+print('PARITY AUDIT PASS (only documented exceptions expected and tolerated)')
+```
+Expected: `PARITY AUDIT PASS`. If it fails, fix the flagged content/copy and re-run until clean.
 
 - [ ] **Step 3: Verify the built frontend served by the real backend (production path)**
 
