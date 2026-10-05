@@ -709,12 +709,15 @@ git add site/backend/app/api site/backend/app/main.py site/backend/tests/test_se
 git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(backend): section endpoints with per-section source selection and error handling"
 ```
 
-### Task 5: SPA fallback + static serving tests
+### Task 5: SPA fallback + static serving tests (incl. hardening from Task 1 review)
 
 **Files:**
 - Test: `site/backend/tests/test_spa_fallback.py`
+- Modify: `site/backend/app/main.py` (catch-all: guard missing index.html, JSON 404 for bare `/api`)
 
-- [ ] **Step 1: Write the failing test**
+Task 1's code quality review found two gaps in the catch-all: (1) an unguarded `index.html` read 500s on every navigation when the static dir exists but is empty (Docker auto-creates missing bind-mount paths), and (2) zero test coverage for the security-critical path-containment logic. This task adds that coverage first, then fixes both gaps.
+
+- [ ] **Step 1: Write the test file (10 tests)**
 
 `site/backend/tests/test_spa_fallback.py`:
 ```python
@@ -737,6 +740,22 @@ def _app_with_static(tmp_path):
     return create_app(content_dir=content_dir, static_dir=static_dir)
 
 
+def _app_with_escape_targets(tmp_path):
+    """SPA shell plus secrets outside the static dir that must never be served."""
+    static_dir = tmp_path / "static"
+    (static_dir / "assets").mkdir(parents=True)
+    (static_dir / "index.html").write_text("<html><!-- SPA --></html>")
+    (tmp_path / "outside.txt").write_text("SECRET outside")
+    sibling = tmp_path / "static2"
+    sibling.mkdir()
+    (sibling / "secret.txt").write_text("SECRET sibling")
+    (static_dir / "link.txt").symlink_to(tmp_path / "outside.txt")
+    content_dir = tmp_path / "content"
+    content_dir.mkdir()
+    (content_dir / "about.json").write_text("{}")
+    return create_app(content_dir=content_dir, static_dir=static_dir)
+
+
 def test_deep_link_serves_spa_shell(tmp_path):
     resp = TestClient(_app_with_static(tmp_path)).get("/about")
     assert resp.status_code == 200
@@ -745,6 +764,13 @@ def test_deep_link_serves_spa_shell(tmp_path):
 
 def test_unknown_api_path_is_json_404(tmp_path):
     resp = TestClient(_app_with_static(tmp_path)).get("/api/nope")
+    assert resp.status_code == 404
+    assert resp.headers["content-type"].startswith("application/json")
+
+
+def test_bare_api_path_is_json_404(tmp_path):
+    # "/api" (no trailing slash) must not fall through to the SPA shell.
+    resp = TestClient(_app_with_static(tmp_path)).get("/api")
     assert resp.status_code == 404
     assert resp.headers["content-type"].startswith("application/json")
 
@@ -769,18 +795,85 @@ def test_api_routes_take_precedence_over_spa_catch_all(tmp_path):
     assert resp.status_code == 200
     assert resp.headers["content-type"].startswith("application/json")
     assert "SPA" not in resp.text
+
+
+def test_missing_index_html_returns_json_404(tmp_path):
+    # Empty static dir (Docker auto-creates missing bind-mount paths) must not
+    # 500 on every navigation.
+    static_dir = tmp_path / "static"
+    static_dir.mkdir()
+    content_dir = tmp_path / "content"
+    content_dir.mkdir()
+    (content_dir / "about.json").write_text("{}")
+    app = create_app(content_dir=content_dir, static_dir=static_dir)
+    resp = TestClient(app).get("/about")
+    assert resp.status_code == 404
+    assert resp.headers["content-type"].startswith("application/json")
+
+
+def test_raw_traversal_does_not_leak(tmp_path):
+    resp = TestClient(_app_with_escape_targets(tmp_path)).get("/../../outside.txt")
+    assert "SECRET" not in resp.text
+
+
+def test_encoded_traversal_does_not_leak(tmp_path):
+    resp = TestClient(_app_with_escape_targets(tmp_path)).get("/..%2F..%2Foutside.txt")
+    assert "SECRET" not in resp.text
+
+
+def test_prefix_sibling_escape_does_not_leak(tmp_path):
+    resp = TestClient(_app_with_escape_targets(tmp_path)).get("/../static2/secret.txt")
+    assert "SECRET" not in resp.text
+
+
+def test_symlink_escape_does_not_leak(tmp_path):
+    resp = TestClient(_app_with_escape_targets(tmp_path)).get("/link.txt")
+    assert "SECRET" not in resp.text
 ```
 
-- [ ] **Step 2: Run to verify pass (implementation already exists from Task 1)**
+- [ ] **Step 2: Run to verify the two expected failures**
 
 Run: `uv run pytest tests/test_spa_fallback.py -v`
-Expected: 4 passed. (The catch-all in `main.py` already returns a JSON 404 for `api/*` paths and the SPA shell otherwise; the last test pins API-route precedence with static serving active.)
+Expected: **8 passed, 2 failed**. The failures are `test_bare_api_path_is_json_404` (currently falls through to the SPA shell → 200) and `test_missing_index_html_returns_json_404` (unguarded read → 500). The four escape-vector tests already pass — Task 1's containment check blocks them; they pin that security property against regressions.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Fix the catch-all in main.py**
+
+Replace the `if static_dir is not None:` block in `site/backend/app/main.py` with:
+
+```python
+    if static_dir is not None:
+        resolved_static = static_dir.resolve()
+        shell = static_dir / "index.html"
+
+        @app.get("/{full_path:path}", include_in_schema=False)
+        def spa_fallback(full_path: str) -> Response:
+            # Unknown API paths (including bare "/api") get a JSON 404, not the SPA shell.
+            if full_path == "api" or full_path.startswith("api/"):
+                return Response(status_code=404, content='{"detail": "Not Found"}',
+                                media_type="application/json")
+            candidate = (static_dir / full_path).resolve()
+            # Path-containment check: never serve files outside the static dir.
+            if candidate.is_file() and candidate.is_relative_to(resolved_static):
+                return FileResponse(candidate)
+            # Missing index.html (e.g., empty dist mount before build) must not
+            # 500 on every navigation.
+            if shell.is_file():
+                return Response(content=shell.read_text(encoding="utf-8"),
+                                media_type="text/html")
+            return Response(status_code=404, content='{"detail": "Not Found"}',
+                            media_type="application/json")
+```
+
+- [ ] **Step 4: Run the full backend suite**
+
+Run: `uv run pytest -v`
+Expected: all pass — 10/10 in `test_spa_fallback.py`, plus the existing health/models/source/router tests.
+
+- [ ] **Step 5: Commit**
 
 ```bash
-git add site/backend/tests/test_spa_fallback.py
-git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "test(backend): SPA fallback and static file serving"
+git add site/backend/tests/test_spa_fallback.py site/backend/app/main.py
+git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "test(backend): SPA fallback coverage; fix missing-index 500 and bare /api 404"
 ```
 
 ### Task 6: Seed content JSON files (extracted from the live bundle)
