@@ -125,7 +125,7 @@ React section mounts ──▶ GET /api/<section> ──▶ router ──▶ get
 
 ### Image (`backend/Dockerfile`, multi-stage)
 
-- Stage 1: `node:20-alpine` — `npm ci && npm run build` for the frontend.
+- Stage 1: `node:22-alpine` — `npm ci && npm run build` for the frontend. (Node 20 reached EOL in April 2026; all locked deps were verified to run on Node 22.)
 - Stage 2: `python:3.12-slim` — pinned backend deps, app code + built `dist/`. Non-root user; Docker healthcheck on `/api/health`.
 
 ### Compose stack (`site/docker-compose.yml`)

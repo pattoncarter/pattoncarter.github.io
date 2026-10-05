@@ -1588,6 +1588,7 @@ git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "f
 
 **Files:**
 - Modify: `site/frontend/src/App.tsx` (replace placeholder)
+- Modify: `site/frontend/src/index.css` (wrap body rule in `@layer base`)
 - Create: `site/frontend/src/components/Nav.tsx`
 - Create: `site/frontend/src/components/Footer.tsx`
 - Create: `site/frontend/src/components/SectionError.tsx`
@@ -1720,15 +1721,36 @@ export function Writing() { return <main className="px-6 py-16 font-mono text-mu
 export function Contact() { return <main className="px-6 py-16 font-mono text-muted">contact</main> }
 ```
 
-- [ ] **Step 6: Verify the build**
+- [ ] **Step 6: Wrap base CSS in @layer base (Tailwind v4 cascade)**
+
+In Tailwind v4, author CSS outside a cascade layer outranks utility classes — the bare `body` rule in `src/index.css` would silently beat any utility later applied to `<body>`/`<html>`. Replace the end of `site/frontend/src/index.css`:
+```css
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+```
+with:
+```css
+@layer base {
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+  }
+}
+```
+
+- [ ] **Step 7: Verify the build**
 
 Run (from `site/frontend/`): `npm run build`
 Expected: PASS
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add site/frontend/src/App.tsx site/frontend/src/components site/frontend/src/pages
+git add site/frontend/src/App.tsx site/frontend/src/components site/frontend/src/pages site/frontend/src/index.css
 git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "feat(frontend): routed app shell with nav, footer, and section error UI"
 ```
 
@@ -2506,7 +2528,7 @@ Expected: exit 0, no diff. If a diff appears, dependencies changed without a re-
 `site/backend/Dockerfile`:
 ```dockerfile
 # Stage 1: build the frontend (npm ci needs the committed package-lock.json)
-FROM node:20-alpine AS frontend-build
+FROM node:22-alpine AS frontend-build
 WORKDIR /build
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
