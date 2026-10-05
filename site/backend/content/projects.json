@@ -64,37 +64,34 @@
     "category": "AI"
   },
   {
-    "title": "Modjulo - Personalized AI Learning Platform",
-    "description": "An AI-powered lifelong learning platform that uses LLMs and knowledge graphs to adaptively guide learners\u2014currently in early development.",
-    "role": "I co-lead the product vision and technical direction of Modjulo, contributing to knowledge graph modeling, AI integration strategy, and early architecture prototypes. I also help facilitate team discussions on core user needs, market positioning, and long-term differentiation.",
+    "title": "Small Models, Big Security - DistilBERT vs Llama Guard",
+    "description": "A lightweight data-loss-prevention firewall that screens user prompts before they reach an internal RAG LLM, catching corporate data-exfiltration attempts at the edge.",
+    "role": "I designed and built this course capstone solo. I synthesized roughly 10k benign and malicious prompts with Gemini\u2014grounded in a fictional corporate corpus plus red-team exfiltration scenarios so both classes were realistic\u2014fine-tuned DistilBERT on that prompt set with the Hugging Face Trainer, and ran a head-to-head evaluation against Llama Guard 3 8B comparing accuracy, precision, recall, F1, and per-inference latency.",
     "technologies": [
-      "LLMs",
-      "Knowledge Graphs",
-      "Spaced Repetition",
+      "Hugging Face Transformers",
+      "DistilBERT",
+      "Llama Guard 3 8B",
+      "Gemini API",
       "Python",
-      "React",
-      "Vector Search",
-      "LangChain",
-      "Neo4j",
-      "NLP"
+      "Data Loss Prevention",
+      "LLM Fine-Tuning",
+      "Synthetic Data Generation"
     ],
-    "links": {
-      "site": "https://modjulo.ai"
-    },
-    "image_url": "https://images.unsplash.com/photo-1684610529682-553625a1ffed?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&h=300",
+    "links": {},
+    "image_url": null,
     "status": null,
-    "id": "modjulo-ai-learning-platform",
-    "long_description": "Modjulo is an in-progress learning platform designed to empower lifelong learners with personalized and structured educational pathways. The core idea is to combine large language models with knowledge graph\u2013based curricula to build dynamic, adaptive, and explainable learning journeys. Instead of flat course catalogs or rigid sequences, Modjulo maps out knowledge domains, tracks learner progress, and adjusts future content based on demonstrated understanding. The system also prioritizes foundational reinforcement, spaced repetition, and long-term concept retention. The platform will eventually support professors and students alike with intelligent study plans, homework generation, and topic-level diagnostics. While still in development, the team is actively shaping the product's scope, backend infrastructure, and go-to-market approach.",
+    "id": "distilbert-llamaguard-dlp",
+    "long_description": "For the capstone of UT Austin\u2019s applied machine learning sequence, I built a lightweight data-loss-prevention firewall that sits between users and an internal RAG LLM. Every prompt is screened before it reaches the model, catching corporate data-exfiltration attempts at the edge where they are cheapest to block. Because real exfiltration traffic is scarce, I synthesized roughly 10k benign and malicious prompts with Gemini, grounding them in a fictional corporate corpus plus red-team exfiltration scenarios so both classes were realistic. I fine-tuned DistilBERT on that prompt set using the Hugging Face Trainer, then ran a head-to-head evaluation against Llama Guard 3 8B\u2014a purpose-built guardrail model an order of magnitude larger\u2014comparing accuracy, precision, recall, and F1 alongside per-inference latency. The result is a reproducible study of when a small, task-specific classifier can do the job of a frontier guardrail at a fraction of the cost.",
     "highlights": [
-      "Developing a knowledge graph\u2013driven system to dynamically guide learners through structured, connected topics.",
-      "Integrating LLMs for personalized content generation, feedback, and adaptive study plans.",
-      "Exploring spaced repetition and retention techniques to reinforce foundational concepts.",
-      "Focusing on explainability, auditability, and progress tracking throughout the learner's journey.",
-      "Currently refining core architecture, user experience, and academic use cases with early collaborators."
+      "Built a DLP firewall that screens user prompts before they reach an internal RAG LLM, catching exfiltration attempts at the edge.",
+      "Synthesized ~10k realistic benign and malicious prompts with Gemini, grounded in a fictional corporate corpus plus red-team scenarios.",
+      "Fine-tuned DistilBERT for sequence classification using the Hugging Face Trainer.",
+      "Benchmarked head-to-head against Llama Guard 3 8B on accuracy, precision, recall, F1, and per-inference latency.",
+      "Produced reproducible evaluation artifacts\u2014ROC curves and confusion-matrix analysis\u2014comparing a lightweight fine-tuned model to a frontier guardrail."
     ],
-    "insights": "Building Modjulo has forced me to deeply consider what meaningful, scalable personalization in education actually looks like\u2014and how AI can support rather than replace structured pedagogical design. We're learning in public, iterating quickly, and focused on delivering real value to both learners and educators.",
-    "timeline": "May 2025 \u2013 Present (In Development)",
-    "category": "AI"
+    "insights": "This project made concrete what I talk about in security work: the cheapest place to stop an attack is before it touches the expensive system. A small, task-specific classifier can match a much larger general-purpose guardrail on a narrow job while running far cheaper and faster at the edge\u2014but only if the evaluation is honest about latency as well as accuracy, and only if the synthetic training data is grounded enough to survive contact with real traffic.",
+    "timeline": "2025",
+    "category": "CYBERSECURITY"
   },
   {
     "title": "ALFRED - Local AI Assistant (IN PROGRESS)",

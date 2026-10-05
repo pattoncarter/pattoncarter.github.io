@@ -5,18 +5,18 @@
   "interests": "My interest in the exploration of nature, sci-fi, and electronic music production informs my creative thinking and appreciation for complex systems. These passions provide another lens through which I explore patterns, innovation, and the art of innovation.",
   "quote": "Technology should be a tool for empowerment, not a replacement for our humanity.",
   "competencies": [
-    "AI-Enabled Learning & Research Systems",
-    "Applied AI Engineering & LLM Integration",
-    "Cloud Security Architecture (AWS, Azure)",
-    "Contextual Search & Retrieval-Augmented Generation (RAG)",
-    "Cybersecurity Strategy Assessment & Risk Analysis",
-    "Decentralized Networking & Resilient Communication Systems",
-    "Embedded Systems & IoT Development",
-    "Full-Stack Web Application Development",
-    "Secure Software Development Lifecycle (SDLC)",
-    "Security Architecture for Enterprise AI Applications",
-    "Systems Automation & Edge Computing",
-    "Technical Due Diligence & Cyber Risk Evaluation (M&A)"
+    "Applied LLM Engineering: Fine-Tuning, Quantization & RAG",
+    "Machine Learning & Deep Learning from First Principles",
+    "Generative Modeling: GANs, VAEs, Normalizing Flows & Flow Matching",
+    "Reinforcement Learning: Dynamic Programming to Policy Gradients",
+    "Natural Language Processing & Clinical Text Analytics",
+    "Cybersecurity Assessments & Risk Strategy (NIST, CIS, ISO 27001)",
+    "Cloud Security Architecture & Secure IaC (AWS, Azure, Terraform)",
+    "Secure Software Development Lifecycle & DevSecOps",
+    "Software Reverse Engineering & Static Analysis (Ghidra)",
+    "Embedded Systems, IoT & Decentralized Mesh Networks",
+    "Full-Stack Application Development (React, TypeScript, Python, Docker)",
+    "Technical Due Diligence & Cyber Risk Advisory (M&A)"
   ],
   "education": [
     {
