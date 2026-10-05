@@ -29,6 +29,10 @@ def create_app(content_dir: Path | None = None, static_dir: Path | None = None) 
     app.include_router(create_sections_router(content_dir))
 
     if static_dir is not None:
+        # NO StaticFiles mount here: a Mount at "/" is a full match for every
+        # path and would shadow any route registered after it. Instead the
+        # catch-all (registered last, so API routes take precedence) serves
+        # real files itself and falls back to the SPA shell.
         resolved_static = static_dir.resolve()
         shell = static_dir / "index.html"
 
@@ -40,6 +44,8 @@ def create_app(content_dir: Path | None = None, static_dir: Path | None = None) 
                                 media_type="application/json")
             candidate = (static_dir / full_path).resolve()
             # Path-containment check: never serve files outside the static dir.
+            # is_relative_to (not a string prefix check — "/app/static2" would
+            # pass a startswith against "/app/static").
             if candidate.is_file() and candidate.is_relative_to(resolved_static):
                 return FileResponse(candidate)
             # Missing index.html (e.g., empty dist mount before build) must not
