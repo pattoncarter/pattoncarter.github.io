@@ -15,7 +15,10 @@ def create_router(content_dir: Path) -> APIRouter:
     would ignore the injection)."""
     router = APIRouter(prefix="/api", tags=["content"])
 
+    # section must be one of the four literals below — never user input.
     def _handle(section: str):
+        # Only ContentError is handled: it's an expected operational failure.
+        # Anything else (bad source impl, misconfigured *_SOURCE) should crash loudly.
         try:
             source = get_source_for_section(section, content_dir)
             return getattr(source, f"get_{section}")()

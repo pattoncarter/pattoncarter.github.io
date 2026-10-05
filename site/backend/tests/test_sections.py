@@ -1,6 +1,6 @@
 import json
 
-from app.models import AboutContent, WritingContent, Post
+from app.models import AboutContent, ContactInfo, Post, Project, WritingContent
 from app.sources import _REGISTRY
 
 ABOUT = {
@@ -34,8 +34,17 @@ def test_about_returns_validated_content(client, tmp_path):
 
 def test_about_malformed_json_is_500_and_health_still_ok(client, tmp_path):
     (tmp_path / "content" / "about.json").write_text("{not json")
-    assert client.get("/api/about").status_code == 500
+    resp = client.get("/api/about")
+    assert resp.status_code == 500
+    assert "about.json" in resp.text
     assert client.get("/api/health").status_code == 200
+
+
+def test_bad_about_does_not_affect_writing(client, tmp_path):
+    (tmp_path / "content" / "about.json").write_text("{not json")
+    (tmp_path / "content" / "writing.json").write_text(json.dumps(WRITING))
+    assert client.get("/api/about").status_code == 500
+    assert client.get("/api/writing").status_code == 200
 
 
 def test_writing_served_from_json_file(client, tmp_path):
@@ -47,7 +56,9 @@ def test_writing_served_from_json_file(client, tmp_path):
 
 def test_writing_missing_file_is_500(client):
     # conftest seeds only about.json
-    assert client.get("/api/writing").status_code == 500
+    resp = client.get("/api/writing")
+    assert resp.status_code == 500
+    assert "writing.json" in resp.text
 
 
 def test_projects_served_from_json_file(client, tmp_path):
@@ -65,8 +76,11 @@ def test_contact_served_from_json_file(client, tmp_path):
 
 
 class _FakeSource:
-    def get_projects(self): raise NotImplementedError
-    def get_contact(self): raise NotImplementedError
+    def get_projects(self):
+        return [Project(title="FAKE", description="d")]
+
+    def get_contact(self):
+        return ContactInfo(email="fake@x.com")
     def get_about(self):
         return AboutContent(
             tagline="FAKE", hero="h", mission="m", interests="i", quote="q",
@@ -78,7 +92,9 @@ class _FakeSource:
 
 def test_registered_fake_source_serves_any_section(client, monkeypatch):
     monkeypatch.setitem(_REGISTRY, "fake", lambda content_dir: _FakeSource())
-    monkeypatch.setenv("WRITING_SOURCE", "fake")
-    monkeypatch.setenv("ABOUT_SOURCE", "fake")
+    for section in ("about", "projects", "writing", "contact"):
+        monkeypatch.setenv(f"{section.upper()}_SOURCE", "fake")
     assert client.get("/api/writing").json()["posts"][0]["title"] == "FAKE"
     assert client.get("/api/about").json()["tagline"] == "FAKE"
+    assert client.get("/api/projects").json()[0]["title"] == "FAKE"
+    assert client.get("/api/contact").json()["email"] == "fake@x.com"
