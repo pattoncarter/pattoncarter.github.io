@@ -2889,7 +2889,17 @@ One-time Cloudflare step: dashboard -> Networks -> Tunnels -> your tunnel -> pub
 Edit `backend/content/*.json` (about, projects, writing, contact). Changes take effect on the next request — no rebuild, no restart. Keep the shapes valid against `backend/app/models.py`; a malformed file makes only that section's endpoint return 500 and the rest of the site keeps working.
 ````
 
-- [ ] **Step 3: Final acceptance against the spec**
+- [ ] **Step 3: Deployment hardening (from the Task 17 quality review)**
+
+1. Pin the cloudflared image so deploys are reproducible from git: pull the current release and pin its exact tag —
+   ```bash
+   docker pull cloudflare/cloudflared
+   docker inspect --format '{{.Config.Image}}' cloudflare/cloudflared:latest
+   ```
+   then set `image: cloudflare/cloudflared:<that-tag>` in `site/docker-compose.yml` (replace the bare `cloudflare/cloudflared`). Re-run `docker compose config -q` to confirm it still parses.
+2. Fix the stale local-access comment in `site/docker-compose.yml`: the recipe hardcodes `-p 8000:8000` — append "(adjust the host port if you change PORT)" to that comment line.
+
+- [ ] **Step 5: Final acceptance against the spec**
 
 Verify each item (spec "Testing" + "Migration plan"):
 1. Backend tests: from `site/backend/`, `uv run pytest -v` — all pass.
@@ -2897,9 +2907,9 @@ Verify each item (spec "Testing" + "Migration plan"):
 3. Containerized app (Step 1's commands): all five routes load in a browser at http://localhost:8000 — `/`, `/about`, `/projects`, `/writing`, `/contact` — including a hard refresh on a deep link (SPA fallback). Content matches the live site (verified against https://pattoncarter.github.io in Task 16).
 4. Repo hygiene: `git status --porcelain` shows nothing untracked under `site/` except ignored entries — no `__pycache__`, `node_modules`, `dist`, or `.env` leaked into the index.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add site/README.md   # plus any files fixed in Step 3, if applicable
-git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "docs(site): README with local dev, no-tunnel run, and deploy instructions"
+git add site/README.md site/docker-compose.yml   # plus any files fixed in Steps 3/5, if applicable
+git -c user.name="Carter P." -c user.email="pattoncarter@yahoo.com" commit -m "docs(site): README with local dev, no-tunnel run, and deploy instructions; pin cloudflared image"
 ```
