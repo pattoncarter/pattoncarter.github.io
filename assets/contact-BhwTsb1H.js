@@ -1,0 +1,1 @@
+const t="pattoncarter@icloud.com",n={github:"https://github.com/pattoncarter",linkedin:"https://linkedin.com/in/carterpatton",substack:"https://carterpatton.substack.com"},o="Let's connect. I'm always open to discussing new ideas, collaborations, or intriguing challenges.",c={email:t,socials:n,intro:o};export{c as default,t as email,o as intro,n as socials};
