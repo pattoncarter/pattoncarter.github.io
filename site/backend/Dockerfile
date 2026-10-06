@@ -4,6 +4,9 @@ WORKDIR /build
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
+# Static-mode imports in src/api/client.ts resolve content JSONs at
+# src/api/../../../backend/content — replicate that layout for tsc/vite.
+COPY backend/content /backend/content
 RUN npm run build
 
 # Stage 2: Python runtime serving API + built SPA
