@@ -64,7 +64,7 @@
     "category": "AI"
   },
   {
-    "title": "Small Models, Big Security - DistilBERT vs Llama Guard",
+    "title": "LLM-as-a-Judge Data Loss Prevention Solution",
     "description": "A lightweight data-loss-prevention firewall that screens user prompts before they reach an internal RAG LLM, catching corporate data-exfiltration attempts at the edge.",
     "role": "I designed and built this course capstone solo. I synthesized roughly 10k benign and malicious prompts with Gemini\u2014grounded in a fictional corporate corpus plus red-team exfiltration scenarios so both classes were realistic\u2014fine-tuned DistilBERT on that prompt set with the Hugging Face Trainer, and ran a head-to-head evaluation against Llama Guard 3 8B comparing accuracy, precision, recall, F1, and per-inference latency.",
     "technologies": [
@@ -78,7 +78,7 @@
       "Synthetic Data Generation"
     ],
     "links": {},
-    "image_url": null,
+    "image_url": "https://images.unsplash.com/photo-1545987796-200677ee1011?auto=format&fit=crop&w=600&h=300",
     "status": null,
     "id": "distilbert-llamaguard-dlp",
     "long_description": "For the capstone of UT Austin\u2019s applied machine learning sequence, I built a lightweight data-loss-prevention firewall that sits between users and an internal RAG LLM. Every prompt is screened before it reaches the model, catching corporate data-exfiltration attempts at the edge where they are cheapest to block. Because real exfiltration traffic is scarce, I synthesized roughly 10k benign and malicious prompts with Gemini, grounding them in a fictional corporate corpus plus red-team exfiltration scenarios so both classes were realistic. I fine-tuned DistilBERT on that prompt set using the Hugging Face Trainer, then ran a head-to-head evaluation against Llama Guard 3 8B\u2014a purpose-built guardrail model an order of magnitude larger\u2014comparing accuracy, precision, recall, and F1 alongside per-inference latency. The result is a reproducible study of when a small, task-specific classifier can do the job of a frontier guardrail at a fraction of the cost.",
