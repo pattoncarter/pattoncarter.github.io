@@ -8,6 +8,12 @@
       "excerpt": "An analysis of TypeSafe\u2019s Jev \u201cSystem One\u201d model\u2014fast, narrowly scoped classification judgments that can act as logic gates inside security operations workflows. The piece draws an FPGA analogy for deterministic response automation, weighs what constrained outputs do and don\u2019t guarantee, benchmarks Jev against open-weight alternatives like Qwen3.5-4B, and lays out a practical four-part pilot for CISOs."
     },
     {
+      "title": "Beyond Frontier APIs - LoRA Without Regret Proves Specialization is the New Frontier for Enterprise AI",
+      "url": "https://www.linkedin.com/pulse/beyond-frontier-apis-lora-without-regret-proves-new-carter-patton-iaclc/",
+      "date": "2025-09-30",
+      "excerpt": "The case that enterprise value from LLMs will come from specialization and efficiency through secure, proprietary fine-tuning rather than general-purpose frontier models. LoRA adapters are the low-cost path to injecting proprietary expertise into large base models for legal, security, and research workloads\u2014provided adoption is paired with privacy-preserving techniques, controlled deployment workflows, and runtime guardrails."
+    },
+    {
       "title": "S:N 0x02 \u2013 More Cyber Budget Cuts, Agentic Guardrails, and \u201cUn-phishable\u201d Logins",
       "url": "https://humanotl.substack.com/p/sn-0x02-more-cyber-budget-cuts-agentic",
       "date": "2025-05-06",
