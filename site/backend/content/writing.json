@@ -5,7 +5,7 @@
       "title": "Building Security Logic Gates with System One AI",
       "url": "https://www.linkedin.com/pulse/building-security-logic-gates-system-one-ai-carter-patton-pksgc",
       "date": "2026-09-30",
-      "excerpt": "An analysis of TypeSafe\u2019s Jev \u201cSystem One\u201d model\u2014fast, narrowly scoped classification judgments that can act as logic gates inside security operations workflows. The piece draws an FPGA analogy for deterministic response automation, weighs what constrained outputs do and don\u2019t guarantee, benchmarks Jev against open-weight alternatives like Qwen3.5-4B, and lays out a practical four-part pilot for CISOs."
+      "excerpt": "An analysis of TypeSafe\u2019s Jev \u201cSystem One\u201d model for fast, narrowly scoped classification judgments that can act as logic gates inside security operations workflows. The piece examines an FPGA analogy for deterministic response automation, weighs what constrained outputs do and don\u2019t guarantee, benchmarks Jev against open-weight alternatives like Qwen3.5-4B, and lays out a practical four-part pilot for CISOs."
     },
     {
       "title": "Beyond Frontier APIs - LoRA Without Regret Proves Specialization is the New Frontier for Enterprise AI",
