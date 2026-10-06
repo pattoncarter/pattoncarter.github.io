@@ -2,6 +2,12 @@
   "intro": "A space for deeper dives into technology, entrepreneurship, venture capital, the future of humanity, and the ideas that drive my work. These writings aim to foster nuanced conversations and encourage new perspectives.",
   "posts": [
     {
+      "title": "Building Security Logic Gates with System One AI",
+      "url": "https://www.linkedin.com/pulse/building-security-logic-gates-system-one-ai-carter-patton-pksgc",
+      "date": "2026-09-30",
+      "excerpt": "An analysis of TypeSafe\u2019s Jev \u201cSystem One\u201d model\u2014fast, narrowly scoped classification judgments that can act as logic gates inside security operations workflows. The piece draws an FPGA analogy for deterministic response automation, weighs what constrained outputs do and don\u2019t guarantee, benchmarks Jev against open-weight alternatives like Qwen3.5-4B, and lays out a practical four-part pilot for CISOs."
+    },
+    {
       "title": "S:N 0x02 \u2013 More Cyber Budget Cuts, Agentic Guardrails, and \u201cUn-phishable\u201d Logins",
       "url": "https://humanotl.substack.com/p/sn-0x02-more-cyber-budget-cuts-agentic",
       "date": "2025-05-06",
