@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:pages": "VITE_STATIC_CONTENT=true VITE_SITE_URL=https://pattoncarter.github.io npm run build",
     "preview": "vite preview"
   },
   "dependencies": {

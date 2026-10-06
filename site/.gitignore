@@ -1,4 +1,6 @@
-.env
+# Deploy secrets file (CLOUDFLARE_TUNNEL_TOKEN) — anchored to site/ so the
+# non-secret build defaults in frontend/.env stay tracked.
+/.env
 **/__pycache__/
 backend/.venv/
 backend/.pytest_cache/
